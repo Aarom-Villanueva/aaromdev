@@ -10,7 +10,7 @@ import type { MediaItem, Product } from '@/data/products';
 const sectionFade = {
   initial: { opacity: 0, y: 40 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.2 },
+  viewport: { once: true, amount: 0.05, margin: '0px 0px -50px 0px' },
 };
 
 function ImageWithFallback({ src, fallbackSrc, alt, className }: { src: string; fallbackSrc: string; alt: string; className?: string }) {
@@ -165,11 +165,8 @@ function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[]
 }
 
 function SecondaryProductCard({ product, index }: { product: Product; index: number }) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(cardRef, { amount: 0.3 });
-
   return (
-    <div ref={cardRef} className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-white/[0.06] bg-[#0A0C0F] transition-all duration-300 hover:border-white/20 hover:bg-[#111318]">
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-white/[0.06] bg-[#0A0C0F] transition-all duration-300 hover:border-white/20 hover:bg-[#111318]">
       <div className="overflow-hidden border-b border-white/[0.05]">
         {product.mediaItems ? (
           <InteractiveShowcase name={product.name} items={product.mediaItems} />
@@ -180,24 +177,16 @@ function SecondaryProductCard({ product, index }: { product: Product; index: num
           </div>
         ) : product.slug === 'vanta-01' ? (
           <div className="relative aspect-video overflow-hidden rounded-lg bg-[#08090C] p-3">
-            {isInView ? (
-              <video
-                src="https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4"
-                poster="/screenshots/vanta-placeholder.png"
-                preload="metadata"
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="h-full w-full object-contain object-center scale-95"
-              />
-            ) : (
-              <img
-                src="/screenshots/vanta-placeholder.png"
-                alt={`Captura de ${product.name}`}
-                className="h-full w-full object-contain object-center scale-95"
-              />
-            )}
+            <video
+              src="https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4"
+              poster="/screenshots/vanta-placeholder.png"
+              preload="metadata"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="h-full w-full object-contain object-center scale-95"
+            />
           </div>
         ) : (
           <div className="relative aspect-video overflow-hidden bg-[#0D0F13]">

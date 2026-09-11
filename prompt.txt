@@ -1,20 +1,31 @@
-Ejecuta una optimización de espaciado móvil y un fix para la tarjeta VANTA-01:
+Aplica los siguientes fixes identificados en el informe de diagnóstico:
 
-1. Reducción de espaciado móvil (app/page.tsx, HeroSection.tsx, ProjectsSection.tsx):
-Reduce drásticamente el espaciado excesivo entre el final de <HeroSection/> y el inicio de <ProjectsSection/> para que la sección de productos aparezca mucho más arriba en móviles.
+1. Fix de animación de scroll (ProjectsSection.tsx):
+En ProjectsSection.tsx, modifica sectionFade:
 
-En app/page.tsx, reduce cualquier margin-top o gap excesivo entre estos dos componentes.
+TypeScript
+const sectionFade = {
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.05, margin: "0px 0px -50px 0px" },
+};
+Esto activará la visibilidad de la sección de inmediato apenas el borde superior entre en pantalla, eliminando el retraso de scroll y la franja negra.
 
-En HeroSection.tsx, reduce el espaciado inferior del bloque de texto 'DESLIZA PARA DESCUBRIR'.
+2. Fix de renderizado directo de video VANTA-01 (ProjectsSection.tsx):
 
-En ProjectsSection.tsx, reduce el padding superior de la sección.
+Elimina el ternario isInView ? <video> : <img> de la tarjeta VANTA-01 (líneas ~183-200).
 
-2. Fix de video de VANTA-01 (data/products.ts, ProjectsSection.tsx):
-Aborda el hallazgo sobre la falta de póster real para VANTA-01.
+Renderiza el elemento <video> de forma directa, continua y sin desmontarlo al scrollear:
 
-En data/products.ts, proporciona un nuevo póster real para VANTA-01. Usa una imagen de marcador de posición técnica genérica (ej. /screenshots/vanta-placeholder.png). Asumimos que esta imagen existe o puede ser una imagen técnica de stock genérica.
-
-En ProjectsSection.tsx, actualiza la tarjeta VANTA-01 para usar el elemento <video> optimizado con el nuevo póster real, eliminando el 'placeholder oscuro' y asegurando que el video de Cloudinary se cargue y reproduzca en móviles con preload="metadata".
-
+TypeScript
+<video
+  src="https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4"
+  preload="metadata"
+  autoPlay
+  loop
+  muted
+  playsInline
+  className="h-full w-full object-contain object-center scale-95"
+/>
 3. Verificación:
 Confirma que tsc --noEmit pase sin errores.
