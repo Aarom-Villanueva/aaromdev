@@ -5,9 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const navLinks = [
-  { label: 'Inicio', href: '#inicio' },
+  { label: 'Inicio', href: '#hero' },
   { label: 'Proyectos', href: '#proyectos' },
-  { label: 'Sistemas', href: '#sistemas' },
   { label: 'Capacidades', href: '#capacidades' },
   { label: 'Perfil', href: '#perfil' },
   { label: 'Contacto', href: '#contacto' },
@@ -45,7 +44,7 @@ export default function Navbar() {
       >
         <nav className="mx-auto flex h-16 max-w-7xl items-center px-6 lg:px-10">
           <div className="relative flex w-full items-center">
-            <a href="#inicio" className="text-[11px] font-semibold tracking-[0.16em] text-white/70 transition-colors hover:text-white">
+            <a href="#hero" className="text-[11px] font-semibold tracking-[0.16em] text-white/70 transition-colors hover:text-white">
               AV
             </a>
             <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 lg:flex">

@@ -1,54 +1,21 @@
-OBJETIVO
-Dos ajustes puntuales sobre el trabajo ya hecho (el sticky, object-cover y dvh ya funcionan bien, no tocar esa lógica):
-1. Extender el "colchón" de tiempo en que el texto del Hero permanece completamente visible antes de que el hero se despinee, para que no se sienta que el texto "aparece y se va".
-2. Cambiar el color del resplandor decorativo de ManifestoSection de azul frío a un tono cálido que coincida con la iluminación real del video del Hero.
+Configura el favicon y los íconos de la pestaña (app/icon.svg o app/icon.tsx) en el App Router de Next.js:
 
-ARCHIVOS A TOCAR
-- components/sections/HeroSection.tsx
-- components/sections/ManifestoSection.tsx
+1. Crear / Actualizar el archivo de ícono (app/icon.svg):
+Genera un SVG vectorial minimalista e impecable para la pestaña del navegador con las siguientes especificaciones:
 
-NO TOCAR
-- app/globals.css (el fix de overflow-x ya está bien, no revertir)
-- Cualquier otro archivo
-- La lógica de useScroll, el sistema de precarga de frames, HERO_SEQUENCE_END, las alturas de sección (h-[200vh]/h-[220vh]), object-cover, h-[100dvh]
-- El texto del headline ("Construyo productos." / "No solo proyectos.") — se mantiene exactamente igual, SIN agregar ninguna línea de presentación ni kicker con el nombre. No tocar el <motion.h1> ni su contenido.
+Tamaño: 32x32 con viewBox="0 0 32 32".
 
-CAMBIO 1 — Extender el colchón de estabilidad (HeroSection.tsx)
-Retimear las ventanas de aparición de contenido para que terminen antes, dejando más scroll de "sostenido" antes del release. Reemplazar los rangos actuales por:
+Fondo: Un rectángulo redondeado (rx="6") de color #0D0F13 (o el fondo oscuro principal del sitio).
 
-  const editorialFade = useTransform(scrollYProgress, [0.68, 0.78], [0, 1], { clamp: true });
+Texto: Las iniciales AV centradas en color blanco (#FFFFFF), usando una tipografía sans-serif limpia, bold, con un tamaño de fuente que ocupe de manera proporcional el espacio.
 
-  const titleOneOpacity = useTransform(scrollYProgress, [0.74, 0.80], [0, 1], { clamp: true });
-  const titleOneY = useTransform(scrollYProgress, [0.74, 0.80], [18, 0], { clamp: true });
-  const titleOneBlur = useTransform(scrollYProgress, [0.74, 0.80], ['blur(6px)', 'blur(0px)'], { clamp: true });
+2. Metadatos de Favicon en app/layout.tsx:
+Asegúrate de que el objeto metadata en layout.tsx incluya la referencia al ícono:
 
-  const titleTwoOpacity = useTransform(scrollYProgress, [0.78, 0.85], [0, 1], { clamp: true });
-  const titleTwoY = useTransform(scrollYProgress, [0.78, 0.85], [18, 0], { clamp: true });
-  const titleTwoBlur = useTransform(scrollYProgress, [0.78, 0.85], ['blur(6px)', 'blur(0px)'], { clamp: true });
-
-  const bodyOpacity = useTransform(scrollYProgress, [0.83, 0.90], [0, 1], { clamp: true });
-  const bodyY = useTransform(scrollYProgress, [0.83, 0.90], [16, 0], { clamp: true });
-  const bodyBlur = useTransform(scrollYProgress, [0.83, 0.90], ['blur(4px)', 'blur(0px)'], { clamp: true });
-
-Con esto el reveal completo termina en 0.90 en vez de 0.95, duplicando el colchón de sostenimiento (de 0.90 a 1.0) antes de que el hero se despinee. No se toca ningún otro valor ni la estructura del componente.
-
-CAMBIO 2 — Continuidad de color (ManifestoSection.tsx)
-Reemplazar el color del resplandor decorativo (actualmente azul frío) por el tono cálido real del video:
-
-  Buscar:
-  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(120,157,255,0.04)_0%,transparent_70%)]" />
-
-  Reemplazar por:
-  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(209,141,98,0.045)_0%,transparent_70%)]" />
-
-No tocar bgTransition (los colores #030303/#08090B/#111318 del fondo) ni el resto del componente.
-
-VALIDACIÓN
-1. Confirmar que, tras terminar de aparecer todo el texto del Hero, este permanece completamente visible y quieto un tramo perceptible antes de que el hero empiece a salir.
-2. Confirmar que al hacer scroll hacia arriba desde ese punto, el texto y el video se desvanecen/retroceden en el mismo orden inverso en que aparecieron — el flujo completo debe ser reversible en ambas direcciones.
-3. Confirmar que el headline sigue siendo exactamente "Construyo productos." / "No solo proyectos." sin ningún texto adicional de presentación arriba.
-4. Confirmar visualmente que el resplandor de ManifestoSection ahora tiene un tono cálido sutil, coherente con la iluminación del retrato del Hero, y no un tinte azul.
-5. No debe afectarse el comportamiento del sticky, el scrubbing de frames, ni el object-cover — si algo de eso cambia, revertir.
-
-RIESGO: BAJO
-Son ajustes de rangos numéricos de animaciones ya existentes y un cambio de color en un solo radial-gradient. No hay cambios de arquitectura ni nuevas dependencias.
+TypeScript
+icons: {
+  icon: '/icon.svg',
+  shortcut: '/icon.svg',
+  apple: '/icon.svg',
+}
+Verifica que al compilar, la pestaña muestre el logo AV nítido y en alta resolución.

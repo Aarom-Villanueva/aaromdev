@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   description: 'Portfolio de Aarom Villanueva, desarrollador de software especializado en backend, cloud y full stack. Lima, Perú.',
   keywords: ['software developer', 'backend', 'cloud', 'full stack', 'Lima', 'Peru', 'Java', 'Spring Boot', 'Next.js'],
   authors: [{ name: 'Aarom Villanueva' }],
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
   openGraph: {
     title: 'Aarom Villanueva — Software Developer',
     description: 'Construyo productos. No solo proyectos.',
