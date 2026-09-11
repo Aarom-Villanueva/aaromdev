@@ -64,7 +64,7 @@ export const secondaryProducts: Product[] = [
     name: 'VANTA-01',
     tagline: 'Sistema técnico en desarrollo.',
     summary: 'Producto en preparación. Su problema, propuesta y evidencia visual se incorporarán cuando el caso de estudio esté listo.',
-    image: '/screenshots/vanta-01.png',
+    image: '/screenshots/vanta-placeholder.png',
     status: 'in-preparation',
   },
   {

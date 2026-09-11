@@ -183,6 +183,7 @@ function SecondaryProductCard({ product, index }: { product: Product; index: num
             {isInView ? (
               <video
                 src="https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4"
+                poster="/screenshots/vanta-placeholder.png"
                 preload="metadata"
                 autoPlay
                 loop
@@ -191,7 +192,11 @@ function SecondaryProductCard({ product, index }: { product: Product; index: num
                 className="h-full w-full object-contain object-center scale-95"
               />
             ) : (
-              <div className="h-full w-full" />
+              <img
+                src="/screenshots/vanta-placeholder.png"
+                alt={`Captura de ${product.name}`}
+                className="h-full w-full object-contain object-center scale-95"
+              />
             )}
           </div>
         ) : (
@@ -237,7 +242,7 @@ function SecondaryProductCard({ product, index }: { product: Product; index: num
 
 export default function ProductsSection() {
   return (
-    <section id="productos" className="relative bg-[#08090B] py-28 lg:py-36">
+    <section id="proyectos" className="relative bg-[#08090B] pt-16 pb-24 lg:pt-24 lg:pb-36">
       <motion.div {...sectionFade} className="mx-auto max-w-7xl px-6 lg:px-10">
         <span className="section-label">03 — Productos</span>
         <h2 className="text-headline mb-6 max-w-3xl text-white">

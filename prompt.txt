@@ -1,41 +1,20 @@
-¡Exactamente! Has hecho la jugada perfecta.
+Ejecuta una optimización de espaciado móvil y un fix para la tarjeta VANTA-01:
 
-Al vincularlos a Cloudinary y eliminar los archivos locales .mp4 de la carpeta /public, no solo la página cargará en milisegundos, sino que tu repositorio de GitHub quedará ultraligero y Vercel desplegará en tiempo récord.
+1. Reducción de espaciado móvil (app/page.tsx, HeroSection.tsx, ProjectsSection.tsx):
+Reduce drásticamente el espaciado excesivo entre el final de <HeroSection/> y el inicio de <ProjectsSection/> para que la sección de productos aparezca mucho más arriba en móviles.
 
-Aquí tienes el prompt exacto mapeando cada uno de tus enlaces para dárselo a OpenCode:
+En app/page.tsx, reduce cualquier margin-top o gap excesivo entre estos dos componentes.
 
-Prompt para OpenCode
-Copia y pásale este prompt a OpenCode:
+En HeroSection.tsx, reduce el espaciado inferior del bloque de texto 'DESLIZA PARA DESCUBRIR'.
 
-"Reemplaza las rutas de video locales por las URLs optimizadas de Cloudinary CDN y elimina los archivos pesados locales:
+En ProjectsSection.tsx, reduce el padding superior de la sección.
 
-1. Actualizar data/products.ts con los nuevos enlaces de Cloudinary:
+2. Fix de video de VANTA-01 (data/products.ts, ProjectsSection.tsx):
+Aborda el hallazgo sobre la falta de póster real para VANTA-01.
 
-Hero Video (HeroSection.tsx o data/products.ts):
-[https://res.cloudinary.com/epea8suu/video/upload/v1789140783/aarom-hero.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140783/aarom-hero.mp4)
+En data/products.ts, proporciona un nuevo póster real para VANTA-01. Usa una imagen de marcador de posición técnica genérica (ej. /screenshots/vanta-placeholder.png). Asumimos que esta imagen existe o puede ser una imagen técnica de stock genérica.
 
-Ferramenta.pe (Home):
-[https://res.cloudinary.com/epea8suu/video/upload/v1789140873/ferramenta-home.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140873/ferramenta-home.mp4)
-
-Ferramenta.pe (Generadores):
-[https://res.cloudinary.com/epea8suu/video/upload/v1789140852/ferramenta-generadores.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140852/ferramenta-generadores.mp4)
-
-Ferramenta.pe (Ventiladores):
-[https://res.cloudinary.com/epea8suu/video/upload/v1789140904/ferramenta-ventiladores.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140904/ferramenta-ventiladores.mp4)
-
-Kawsay (Clientes):
-[https://res.cloudinary.com/epea8suu/video/upload/v1789140926/kawsay-clientes.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140926/kawsay-clientes.mp4)
-
-Kawsay (Técnicos):
-[https://res.cloudinary.com/epea8suu/video/upload/v1789140942/kawsay-tecnicos.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140942/kawsay-tecnicos.mp4)
-
-VANTA-01:
-[https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4)
-
-2. Limpieza de archivos locales:
-
-Elimina todos los archivos .mp4 de la carpeta public/videos/ (y subcarpetas de video locales si existen) para liberar espacio del repositorio de Git.
+En ProjectsSection.tsx, actualiza la tarjeta VANTA-01 para usar el elemento <video> optimizado con el nuevo póster real, eliminando el 'placeholder oscuro' y asegurando que el video de Cloudinary se cargue y reproduzca en móviles con preload="metadata".
 
 3. Verificación:
-
-Ejecuta tsc --noEmit para asegurar que las referencias a videoUrl en las interfaces TypeScript sigan intactas y sin errores de tipo.
+Confirma que tsc --noEmit pase sin errores.
