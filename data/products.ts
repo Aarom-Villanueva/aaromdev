@@ -3,6 +3,7 @@ export type MediaItem = {
   src: string;
   label: string;
   scroll?: boolean;
+  poster?: string;
 };
 
 export type Product = {
@@ -36,9 +37,9 @@ export const secondaryProducts: Product[] = [
     summary: 'E-commerce enfocado en la venta de generadores, ventiladores y herramientas industriales, con catálogo de productos, fichas técnicas y contacto integrado.',
     image: '/screenshots/ferramenta-producto.png',
     mediaItems: [
-      { type: 'video', src: '/media/ferramenta-home.mp4', label: 'Inicio' },
-      { type: 'video', src: '/media/ferramenta-generadores.mp4', label: 'Generadores' },
-      { type: 'video', src: '/media/ferramenta-ventiladores.mp4', label: 'Ventiladores' },
+      { type: 'video', src: '/media/ferramenta-home.mp4', label: 'Inicio', poster: '/screenshots/ferramenta-producto.png' },
+      { type: 'video', src: '/media/ferramenta-generadores.mp4', label: 'Generadores', poster: '/screenshots/ferramenta-producto.png' },
+      { type: 'video', src: '/media/ferramenta-ventiladores.mp4', label: 'Ventiladores', poster: '/screenshots/ferramenta-producto.png' },
       { type: 'image', src: '/screenshots/ferramenta-producto.png', label: 'Producto', scroll: true },
     ],
     status: 'featured',
@@ -53,8 +54,8 @@ export const secondaryProducts: Product[] = [
     technologies: ['C#', 'ASP.NET', 'SQL Server', 'Entity Framework', 'Bootstrap 5'],
     mediaItems: [
       { type: 'image', src: '/screenshots/kawsay-dashboard.png', label: 'Dashboard' },
-      { type: 'video', src: '/media/kawsay-clientes.mp4', label: 'Historial Clientes' },
-      { type: 'video', src: '/media/kawsay-tecnicos.mp4', label: 'Historial Técnicos' },
+      { type: 'video', src: '/media/kawsay-clientes.mp4', label: 'Historial Clientes', poster: '/screenshots/kawsay-dashboard.png' },
+      { type: 'video', src: '/media/kawsay-tecnicos.mp4', label: 'Historial Técnicos', poster: '/screenshots/kawsay-dashboard.png' },
     ],
     image: '/screenshots/kawsay-dashboard.png',
   },

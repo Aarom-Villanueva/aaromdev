@@ -18,6 +18,8 @@ export default function HeroSection() {
         <video
           className="h-full w-full object-cover"
           src="/media/aarom-hero.mp4"
+          poster="/hero-frames/frame-0060.webp"
+          preload="metadata"
           autoPlay
           loop
           muted

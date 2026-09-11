@@ -1,7 +1,7 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { AnimatePresence, motion, useInView } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import AutoScrollImage from './AutoScrollImage';
 import { featuredProduct, secondaryProducts } from '@/data/products';
@@ -85,6 +85,8 @@ function FeaturedProductCard({ product }: { product: Product }) {
 function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeItem = items[activeIndex];
+  const showcaseRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(showcaseRef, { amount: 0.3 });
 
   useEffect(() => {
     if (items.length <= 1) return;
@@ -95,7 +97,7 @@ function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[]
   }, [activeIndex, items.length]);
 
   return (
-    <div className="relative flex aspect-video w-full flex-col overflow-hidden bg-[#0D0F13]">
+    <div ref={showcaseRef} className="relative flex aspect-video w-full flex-col overflow-hidden bg-[#0D0F13]">
       <div className="flex shrink-0 items-center gap-2 border-b border-white/[0.05] bg-white/[0.02] px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
@@ -127,7 +129,24 @@ function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[]
             className="h-full w-full"
           >
             {activeItem.type === 'video' ? (
-              <video src={activeItem.src} autoPlay loop muted playsInline className="h-full w-full object-cover" />
+              isInView ? (
+                <video
+                  src={activeItem.src}
+                  poster={activeItem.poster}
+                  preload="metadata"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <img
+                  src={activeItem.poster ?? activeItem.src}
+                  alt={`Captura de ${name} — ${activeItem.label}`}
+                  className="h-full w-full object-cover"
+                />
+              )
             ) : activeItem.scroll ? (
               <AutoScrollImage src={activeItem.src} alt={`Captura de ${name} — ${activeItem.label}`} />
             ) : (
@@ -146,8 +165,11 @@ function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[]
 }
 
 function SecondaryProductCard({ product, index }: { product: Product; index: number }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(cardRef, { amount: 0.3 });
+
   return (
-    <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-white/[0.06] bg-[#0A0C0F] transition-all duration-300 hover:border-white/20 hover:bg-[#111318]">
+    <div ref={cardRef} className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-white/[0.06] bg-[#0A0C0F] transition-all duration-300 hover:border-white/20 hover:bg-[#111318]">
       <div className="overflow-hidden border-b border-white/[0.05]">
         {product.mediaItems ? (
           <InteractiveShowcase name={product.name} items={product.mediaItems} />
@@ -158,15 +180,19 @@ function SecondaryProductCard({ product, index }: { product: Product; index: num
           </div>
         ) : product.slug === 'vanta-01' ? (
           <div className="relative aspect-video overflow-hidden rounded-lg bg-[#08090C] p-3">
-            <video
-              src="/media/vanta.mp4"
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              className="h-full w-full object-contain object-center scale-95"
-            />
+            {isInView ? (
+              <video
+                src="/media/vanta.mp4"
+                preload="metadata"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="h-full w-full object-contain object-center scale-95"
+              />
+            ) : (
+              <div className="h-full w-full" />
+            )}
           </div>
         ) : (
           <div className="relative aspect-video overflow-hidden bg-[#0D0F13]">
