@@ -1,31 +1,9 @@
-Aplica los siguientes fixes identificados en el informe de diagnóstico:
+Elimina el número del badge de la sección de Proyectos/Productos para mantener la consistencia con el resto del sitio:
 
-1. Fix de animación de scroll (ProjectsSection.tsx):
-En ProjectsSection.tsx, modifica sectionFade:
+1. Modificar el Badge en ProjectsSection.tsx:
+Busca el componente de cabecera de sección (o etiqueta de categoría) donde se renderiza el texto 03 — PRODUCTOS (o 03 — PROYECTOS).
 
-TypeScript
-const sectionFade = {
-  initial: { opacity: 0, y: 40 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.05, margin: "0px 0px -50px 0px" },
-};
-Esto activará la visibilidad de la sección de inmediato apenas el borde superior entre en pantalla, eliminando el retraso de scroll y la franja negra.
+Cambia el texto del badge para que quede únicamente como PRODUCTOS (o PROYECTOS), conservando el mismo estilo de línea y tipografía en mayúsculas que tienen las demás secciones (CAPACIDADES APLICADAS y PERFIL).
 
-2. Fix de renderizado directo de video VANTA-01 (ProjectsSection.tsx):
-
-Elimina el ternario isInView ? <video> : <img> de la tarjeta VANTA-01 (líneas ~183-200).
-
-Renderiza el elemento <video> de forma directa, continua y sin desmontarlo al scrollear:
-
-TypeScript
-<video
-  src="https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4"
-  preload="metadata"
-  autoPlay
-  loop
-  muted
-  playsInline
-  className="h-full w-full object-contain object-center scale-95"
-/>
-3. Verificación:
-Confirma que tsc --noEmit pase sin errores.
+2. Verificación:
+Confirma que tsc --noEmit siga pasando sin errores.

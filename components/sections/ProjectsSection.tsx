@@ -233,7 +233,7 @@ export default function ProductsSection() {
   return (
     <section id="proyectos" className="relative bg-[#08090B] pt-16 pb-24 lg:pt-24 lg:pb-36">
       <motion.div {...sectionFade} className="mx-auto max-w-7xl px-6 lg:px-10">
-        <span className="section-label">03 — Productos</span>
+        <span className="section-label">Productos</span>
         <h2 className="text-headline mb-6 max-w-3xl text-white">
           Sistemas reales. <span className="text-white/50">Código en producción.</span>
         </h2>
