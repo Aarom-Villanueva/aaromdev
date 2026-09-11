@@ -1,21 +1,41 @@
-Optimiza el rendimiento de carga de los videos en todos los componentes que renderizan <video> (ej. InteractiveShowcase.tsx, FerramentaShowcase.tsx, etc.):
+¡Exactamente! Has hecho la jugada perfecta.
 
-1. Atributos de Carga Pasiva:
-Modifica las etiquetas <video> para que incluyan estrictamente estos atributos:
+Al vincularlos a Cloudinary y eliminar los archivos locales .mp4 de la carpeta /public, no solo la página cargará en milisegundos, sino que tu repositorio de GitHub quedará ultraligero y Vercel desplegará en tiempo récord.
 
-TypeScript
-<video
-  src={item.videoUrl}
-  poster={item.imageUrl} // Muestra la captura previa mientras carga el video
-  preload="metadata"      // NO descarga el video completo en el initial load
-  autoPlay
-  loop
-  muted
-  playsInline
-  className="..."
-/>
-2. Lazy Loading con Framer Motion:
-Asegúrate de que el elemento <video> solo intente reproducirse o cargar cuando la tarjeta esté visible en pantalla o la pestaña correspondiente esté activa, utilizando una condición simple de renderizado condicional si no está activa.
+Aquí tienes el prompt exacto mapeando cada uno de tus enlaces para dárselo a OpenCode:
 
-3. Verificación de Tipos:
-Confirma que el typecheck siga pasando sin errores.
+Prompt para OpenCode
+Copia y pásale este prompt a OpenCode:
+
+"Reemplaza las rutas de video locales por las URLs optimizadas de Cloudinary CDN y elimina los archivos pesados locales:
+
+1. Actualizar data/products.ts con los nuevos enlaces de Cloudinary:
+
+Hero Video (HeroSection.tsx o data/products.ts):
+[https://res.cloudinary.com/epea8suu/video/upload/v1789140783/aarom-hero.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140783/aarom-hero.mp4)
+
+Ferramenta.pe (Home):
+[https://res.cloudinary.com/epea8suu/video/upload/v1789140873/ferramenta-home.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140873/ferramenta-home.mp4)
+
+Ferramenta.pe (Generadores):
+[https://res.cloudinary.com/epea8suu/video/upload/v1789140852/ferramenta-generadores.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140852/ferramenta-generadores.mp4)
+
+Ferramenta.pe (Ventiladores):
+[https://res.cloudinary.com/epea8suu/video/upload/v1789140904/ferramenta-ventiladores.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140904/ferramenta-ventiladores.mp4)
+
+Kawsay (Clientes):
+[https://res.cloudinary.com/epea8suu/video/upload/v1789140926/kawsay-clientes.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140926/kawsay-clientes.mp4)
+
+Kawsay (Técnicos):
+[https://res.cloudinary.com/epea8suu/video/upload/v1789140942/kawsay-tecnicos.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140942/kawsay-tecnicos.mp4)
+
+VANTA-01:
+[https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4](https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4)
+
+2. Limpieza de archivos locales:
+
+Elimina todos los archivos .mp4 de la carpeta public/videos/ (y subcarpetas de video locales si existen) para liberar espacio del repositorio de Git.
+
+3. Verificación:
+
+Ejecuta tsc --noEmit para asegurar que las referencias a videoUrl en las interfaces TypeScript sigan intactas y sin errores de tipo.

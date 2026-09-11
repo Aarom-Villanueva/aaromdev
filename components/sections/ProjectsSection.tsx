@@ -182,7 +182,7 @@ function SecondaryProductCard({ product, index }: { product: Product; index: num
           <div className="relative aspect-video overflow-hidden rounded-lg bg-[#08090C] p-3">
             {isInView ? (
               <video
-                src="/media/vanta.mp4"
+                src="https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4"
                 preload="metadata"
                 autoPlay
                 loop

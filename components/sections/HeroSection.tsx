@@ -17,7 +17,7 @@ export default function HeroSection() {
       <div className="absolute inset-0">
         <video
           className="h-full w-full object-cover"
-          src="/media/aarom-hero.mp4"
+          src="https://res.cloudinary.com/epea8suu/video/upload/v1789140783/aarom-hero.mp4"
           poster="/hero-frames/frame-0060.webp"
           preload="metadata"
           autoPlay
