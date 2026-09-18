@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
-const MotionImage = motion(Image);
+const MotionImage = motion.create(Image);
 
 type AutoScrollImageProps = {
   src: string;

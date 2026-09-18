@@ -141,6 +141,14 @@
     50% { transform: translateY(6px); opacity: 1; }
   }
 
+  .cursor-blink {
+    animation: cursorBlink 1s step-end infinite;
+  }
+
+  @keyframes cursorBlink {
+    50% { opacity: 0; }
+  }
+
   .clip-bottom-fade {
     -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
     mask-image: linear-gradient(to bottom, black 60%, transparent 100%);

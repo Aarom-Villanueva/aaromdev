@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Antonio, Space_Grotesk } from 'next/font/google';
 import { MotionConfig } from 'framer-motion';
+import { HeroReadyProvider } from '@/components/HeroReadyProvider';
+import Preloader from '@/components/Preloader';
 import './globals.css';
 
 const inter = Inter({
@@ -8,6 +10,22 @@ const inter = Inter({
   weight: ['300', '400', '500', '600', '700', '800', '900'],
   display: 'swap',
   variable: '--font-inter',
+});
+
+// Display face for the Hero's right-hand phrase only.
+const antonio = Antonio({
+  subsets: ['latin'],
+  weight: ['600', '700'],
+  display: 'swap',
+  variable: '--font-antonio',
+});
+
+// Editorial face for the Hero's left-hand identity block only.
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
+  variable: '--font-space-grotesk',
 });
 
 export const metadata: Metadata = {
@@ -34,9 +52,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`dark ${inter.variable}`}>
+    <html lang="es" className={`dark ${inter.variable} ${antonio.variable} ${spaceGrotesk.variable}`}>
       <body className="antialiased">
-        <MotionConfig reducedMotion="user">{children}</MotionConfig>
+        <MotionConfig reducedMotion="user">
+          <HeroReadyProvider>
+            <Preloader />
+            {children}
+          </HeroReadyProvider>
+        </MotionConfig>
       </body>
     </html>
   );

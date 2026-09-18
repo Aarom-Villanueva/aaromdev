@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { Wordmark } from '@/components/brand/Logo';
+import { useHeroReady } from '@/components/HeroReadyProvider';
 
 const navLinks = [
   { label: 'Inicio', href: '#hero' },
@@ -15,6 +17,8 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { brandOwner } = useHeroReady();
+  const brandHiddenForPreloader = brandOwner === 'preloader';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -44,8 +48,20 @@ export default function Navbar() {
       >
         <nav className="mx-auto flex h-16 max-w-7xl items-center px-6 lg:px-10">
           <div className="relative flex w-full items-center">
-            <a href="#hero" className="text-[11px] font-semibold tracking-[0.16em] text-white/70 transition-colors hover:text-white">
-              AV
+            <a
+              href="#hero"
+              id="navbar-brand-target"
+              aria-label="Aarom Villanueva — Inicio"
+              aria-hidden={brandHiddenForPreloader || undefined}
+              tabIndex={brandHiddenForPreloader ? -1 : undefined}
+              // Kept in the layout (never display:none) so the Preloader can measure its
+              // real DOMRect as the floating logo's travel target. Only becomes visible
+              // once brandOwner flips to "navbar" in the same render the floating copy
+              // stops rendering — see HeroReadyProvider/Preloader.
+              style={brandHiddenForPreloader ? { visibility: 'hidden', opacity: 0, pointerEvents: 'none' } : undefined}
+              className="text-white/70 transition-colors hover:text-white"
+            >
+              <Wordmark className="h-4 w-auto text-current sm:h-5" />
             </a>
             <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 lg:flex">
               {navLinks.map((link) => (
