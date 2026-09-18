@@ -2,7 +2,7 @@
 
 import { useAnimate } from 'framer-motion';
 import { ArrowRight, ArrowDown, Play } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { useHeroReady } from '@/components/HeroReadyProvider';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useTypewriter } from '@/hooks/useTypewriter';
@@ -37,27 +37,39 @@ const cinematicEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
 // RIGHT — four lines, explicitly sequential (not "all at once"). Desktop timing is the
 // source of truth; mobile derives from it via `timeScale` (delay/duration/stagger all
 // scale together), which lands mobile within its own slightly-faster target range.
+// RIGHT_SPEED_SCALE scales every one of those (line starts, line duration, char
+// stagger) by the same factor so the block reads as evenly faster/slower, not just
+// shifted earlier/later. Currently ~22.5% faster than the previous pass (0.91), which
+// had itself been tuned ~17.5% slower than the original baseline (1.175) — the
+// original felt right but the first slow-down overshot, so this nets out net-faster
+// than baseline overall while still keeping the same line-by-line stagger shape.
 const RIGHT_LINE_STARTS_MS = [200, 500, 800, 1100];
 const RIGHT_LINE_DURATION_S = 1.0;
 const RIGHT_CHAR_STAGGER_S = 0.03;
+const RIGHT_SPEED_SCALE = 0.91;
+// Brief breathing room between the RIGHT block's last character landing and the LEFT
+// block's first cue — long enough to read as a beat, short enough to stay tight.
+const RIGHT_TO_LEFT_PAUSE_MS = 125;
 
 // LEFT — hybrid: typewriter for the eyebrow, fast character reveal for the name,
-// word-by-word for the description, staggered buttons. Only the coarse per-block start
-// offsets scale down for mobile (via timeScale); the fine per-character/word cadence
-// stays the same crispness on both.
-const LEFT_MARKER_START_S = 0.2;
-const LEFT_CURSOR_MS = 200;
-const LEFT_TYPE_START_MS = 300;
-const LEFT_TYPE_MS_PER_CHAR = 45;
-const LEFT_NAME_START_MS = 850;
-const LEFT_NAME_CHAR_STAGGER_S = 0.04;
-const LEFT_NAME_CHAR_DURATION_S = 0.45;
-const LEFT_DESC_START_MS = 1350;
-const LEFT_DESC_WORD_STAGGER_S = 0.045;
-const LEFT_DESC_WORD_DURATION_S = 0.5;
-const LEFT_BUTTONS_START_MS = 1900;
-const LEFT_BUTTON_GAP_MS = 120;
-const LEFT_BUTTON_DURATION_S = 0.5;
+// word-by-word for the description, staggered buttons. LEFT_SPEED_SCALE speeds every
+// value below up by the same ~17.5% on both desktop and mobile alike (baked into the
+// constants themselves, so it applies before the separate isMobile `timeScale` below —
+// which still only scales the coarse per-block start offsets, unchanged in shape).
+const LEFT_SPEED_SCALE = 0.825;
+const LEFT_MARKER_START_S = 0.2 * LEFT_SPEED_SCALE;
+const LEFT_CURSOR_MS = 200 * LEFT_SPEED_SCALE;
+const LEFT_TYPE_START_MS = 300 * LEFT_SPEED_SCALE;
+const LEFT_TYPE_MS_PER_CHAR = 45 * LEFT_SPEED_SCALE;
+const LEFT_NAME_START_MS = 850 * LEFT_SPEED_SCALE;
+const LEFT_NAME_CHAR_STAGGER_S = 0.04 * LEFT_SPEED_SCALE;
+const LEFT_NAME_CHAR_DURATION_S = 0.45 * LEFT_SPEED_SCALE;
+const LEFT_DESC_START_MS = 1350 * LEFT_SPEED_SCALE;
+const LEFT_DESC_WORD_STAGGER_S = 0.045 * LEFT_SPEED_SCALE;
+const LEFT_DESC_WORD_DURATION_S = 0.5 * LEFT_SPEED_SCALE;
+const LEFT_BUTTONS_START_MS = 1900 * LEFT_SPEED_SCALE;
+const LEFT_BUTTON_GAP_MS = 120 * LEFT_SPEED_SCALE;
+const LEFT_BUTTON_DURATION_S = 0.5 * LEFT_SPEED_SCALE;
 const CURSOR_LINGER_MS = 350;
 
 // Below `lg`, the LEFT block lives in its own panel under the video instead of the
@@ -104,6 +116,11 @@ export default function HeroSection() {
   const [heroStarted, setHeroStarted] = useState(false);
   const [playbackBlocked, setPlaybackBlocked] = useState(false);
   const [panelInView, setPanelInView] = useState(false);
+  // Flips exactly once, from the RIGHT block's own animation completion (Promise.all
+  // over every line/char animate() call it kicked off) — never from an estimated
+  // timeout. The LEFT block's entrance effect below is gated on this, not on
+  // heroStarted, so it can never start until the phrase has actually finished.
+  const [rightSequenceDone, setRightSequenceDone] = useState(false);
   const [typewriterStart, setTypewriterStart] = useState(false);
   const [cursorVisible, setCursorVisible] = useState(false);
 
@@ -361,45 +378,74 @@ export default function HeroSection() {
   }, [prefersReducedMotion]);
 
   // RIGHT — display phrase. Runs purely off heroStarted, on every breakpoint, exactly
-  // as before: it's part of the video-reveal beat, not the below-the-fold panel.
+  // as before: it's part of the video-reveal beat, not the below-the-fold panel. Every
+  // animate() call it kicks off is collected into one Promise.all so there is exactly
+  // one completion event for the whole block — that's what unblocks LEFT below, after
+  // a short RIGHT_TO_LEFT_PAUSE_MS beat. Never fires twice (rightAnimatedRef).
   useEffect(() => {
     if (!heroStarted || rightAnimatedRef.current || !scope.current) return;
     rightAnimatedRef.current = true;
 
     if (prefersReducedMotion) {
       animate('[data-right-line], [data-right-char]', { opacity: 1 }, { duration: 0.25 });
+      setRightSequenceDone(true);
       return;
     }
 
+    let cancelled = false;
     const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    const timeScale = isMobile ? 0.8 : 1;
+    const timeScale = (isMobile ? 0.8 : 1) * RIGHT_SPEED_SCALE;
     const lineFromX = isMobile ? 60 : 140;
     const blurPx = isMobile ? 3 : 5;
     const charStagger = RIGHT_CHAR_STAGGER_S * timeScale;
 
     const lines = Array.from(scope.current?.querySelectorAll('[data-right-line]') ?? []) as HTMLElement[];
+    const animations: Promise<unknown>[] = [];
     lines.forEach((lineEl, li) => {
       const delay = (RIGHT_LINE_STARTS_MS[li] / 1000) * timeScale;
-      animate(
-        lineEl,
-        { x: [lineFromX, 0], clipPath: ['inset(0% 100% 0% 0%)', 'inset(0% 0% 0% 0%)'] },
-        { duration: RIGHT_LINE_DURATION_S * timeScale, delay, ease: cinematicEase }
+      animations.push(
+        Promise.resolve(
+          animate(
+            lineEl,
+            { x: [lineFromX, 0], clipPath: ['inset(0% 100% 0% 0%)', 'inset(0% 0% 0% 0%)'] },
+            { duration: RIGHT_LINE_DURATION_S * timeScale, delay, ease: cinematicEase }
+          )
+        )
       );
       const chars = Array.from(lineEl.querySelectorAll('[data-right-char]')) as HTMLElement[];
       chars.forEach((charEl, ci) => {
-        animate(
-          charEl,
-          { opacity: [0, 1], y: [22, 0], skewY: [4, 0], filter: [`blur(${blurPx}px)`, 'blur(0px)'] },
-          { duration: RIGHT_LINE_DURATION_S * 0.65 * timeScale, delay: delay + ci * charStagger, ease: cinematicEase }
+        animations.push(
+          Promise.resolve(
+            animate(
+              charEl,
+              { opacity: [0, 1], y: [22, 0], skewY: [4, 0], filter: [`blur(${blurPx}px)`, 'blur(0px)'] },
+              { duration: RIGHT_LINE_DURATION_S * 0.65 * timeScale, delay: delay + ci * charStagger, ease: cinematicEase }
+            )
+          )
         );
       });
     });
+
+    Promise.all(animations).then(() => {
+      if (cancelled) return;
+      window.setTimeout(() => {
+        if (!cancelled) setRightSequenceDone(true);
+      }, RIGHT_TO_LEFT_PAUSE_MS);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [heroStarted, prefersReducedMotion, animate, scope]);
 
   // LEFT — marker, typewriter eyebrow, name reveal, description, buttons. Gated on the
-  // panel actually being in view so it never plays off-screen on mobile/tablet.
+  // RIGHT block's own completion event (never heroStarted directly, never a guessed
+  // delay) AND on the panel actually being in view, so it never plays off-screen on
+  // mobile/tablet. The setTimeouts below are internal choreography for LEFT's own
+  // sub-elements (eyebrow -> name -> description -> buttons), not inter-block
+  // coordination — that part is the single Promise.all above.
   useEffect(() => {
-    if (!heroStarted || !panelInView || leftAnimatedRef.current || !scope.current) return;
+    if (!rightSequenceDone || !panelInView || leftAnimatedRef.current || !scope.current) return;
     leftAnimatedRef.current = true;
 
     if (prefersReducedMotion) {
@@ -451,7 +497,7 @@ export default function HeroSection() {
     ];
 
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [heroStarted, panelInView, prefersReducedMotion, animate, scope]);
+  }, [rightSequenceDone, panelInView, prefersReducedMotion, animate, scope]);
 
   // Cursor stops blinking once typing finishes, fades shortly after.
   useEffect(() => {
@@ -604,9 +650,17 @@ export default function HeroSection() {
             <span className="sr-only">{DESCRIPTION_TEXT}</span>
             <span aria-hidden="true">
               {DESCRIPTION_WORDS.map((word, wi) => (
-                <span key={wi} data-desc-word className={`inline-block ${prefersReducedMotion ? '' : 'opacity-0'}`}>
-                  {wi < DESCRIPTION_WORDS.length - 1 ? `${word} ` : word}
-                </span>
+                // The space is a sibling text node, not part of the span's own text: a
+                // trailing space *inside* an inline-block gets trimmed by the browser
+                // (it establishes its own inline formatting context), which is what was
+                // collapsing every word together. A space here, outside the box, is
+                // real, visible, and still a normal line-wrap opportunity.
+                <Fragment key={wi}>
+                  <span data-desc-word className={`inline-block ${prefersReducedMotion ? '' : 'opacity-0'}`}>
+                    {word}
+                  </span>
+                  {wi < DESCRIPTION_WORDS.length - 1 ? ' ' : null}
+                </Fragment>
               ))}
             </span>
           </p>
