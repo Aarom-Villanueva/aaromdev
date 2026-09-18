@@ -1,13 +1,17 @@
 'use client';
 
 import { useAnimate } from 'framer-motion';
-import { ArrowRight, ArrowDown } from 'lucide-react';
+import { ArrowRight, ArrowDown, Play } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useHeroReady } from '@/components/HeroReadyProvider';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useTypewriter } from '@/hooks/useTypewriter';
 
 const REVEAL_FALLBACK_MS = 1200;
+// The Hero's text/CTA reveal must never wait on video.play() resolving — Safari iOS
+// (Low Power Mode, certain contexts) can reject even a muted+playsInline attempt. This
+// is the hard cap: whichever of "video actually starts" or this timeout comes first.
+const HERO_TEXT_REVEAL_FALLBACK_MS = 700;
 const cinematicEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 // RIGHT — four lines, explicitly sequential (not "all at once"). Desktop timing is the
@@ -67,9 +71,15 @@ export default function HeroSection() {
 
   const rightAnimatedRef = useRef(false);
   const leftAnimatedRef = useRef(false);
-  const videoStartedRef = useRef(false);
-  const videoStartPromiseRef = useRef<Promise<void> | null>(null);
+  // Guards the text/CTA reveal so it only ever fires once, from whichever path (the
+  // video actually starting, or the fallback cap) gets there first.
+  const heroRevealedRef = useRef(false);
+  // True while a play() attempt is in flight or has succeeded; reset to false only on
+  // rejection, so a single manual retry (via the "Reproducir video" button) is possible
+  // without ever allowing a duplicate/concurrent play() call.
+  const videoAttemptRef = useRef(false);
   const [heroStarted, setHeroStarted] = useState(false);
+  const [playbackBlocked, setPlaybackBlocked] = useState(false);
   const [panelInView, setPanelInView] = useState(false);
   const [typewriterStart, setTypewriterStart] = useState(false);
   const [cursorVisible, setCursorVisible] = useState(false);
@@ -79,6 +89,12 @@ export default function HeroSection() {
     typewriterStart && !prefersReducedMotion,
     LEFT_TYPE_MS_PER_CHAR
   );
+
+  const revealHero = useCallback(() => {
+    if (heroRevealedRef.current) return;
+    heroRevealedRef.current = true;
+    setHeroStarted(true);
+  }, []);
 
   // Tells the Preloader (unchanged) that the video has buffered enough data — this only
   // affects when the Preloader is willing to start its exit, never playback itself.
@@ -107,46 +123,84 @@ export default function HeroSection() {
     };
   }, [prefersReducedMotion, markHeroReady]);
 
-  // The single protected entry point for playback. videoStartedRef is set to true
-  // BEFORE awaiting play(), so no second call — from anywhere — can ever run this
-  // again, including a second React Strict Mode effect pass.
+  // The single protected entry point for playback. videoAttemptRef is set to true
+  // BEFORE awaiting play(), so no second/concurrent call can ever run this again —
+  // except a deliberate retry after a rejection (see the catch branch below), which is
+  // the only case that resets the guard. Never touches heroStarted: a failed or
+  // never-resolving play() must not be able to leave the Hero's text/CTAs hidden.
   const startHeroVideo = useCallback(async () => {
-    if (videoStartedRef.current) return;
+    if (videoAttemptRef.current) return;
     const video = videoRef.current;
     if (!video) return;
 
-    videoStartedRef.current = true;
+    videoAttemptRef.current = true;
+    setPlaybackBlocked(false);
+
+    // Set imperatively right before play() — Safari iOS is more reliable about
+    // honoring muted/inline playback this way than trusting the HTML attributes alone.
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
     video.currentTime = 0;
 
     try {
-      videoStartPromiseRef.current = video.play();
-      await videoStartPromiseRef.current;
-      setHeroStarted(true);
+      await video.play();
+      // Belt-and-suspenders: the 'playing' event listener below is the primary path,
+      // but if it already fired first this is a no-op (revealHero is guarded).
+      revealHero();
     } catch {
-      videoStartedRef.current = false;
+      // Safari (Low Power Mode, certain contexts) can reject even a muted+playsInline
+      // play() call. The video simply stays on its poster/first frame — composition
+      // and the text/CTA reveal (already handled by the fallback below) are unaffected.
+      // Allow exactly one manual retry via the "Reproducir video" button.
+      videoAttemptRef.current = false;
+      setPlaybackBlocked(true);
     }
-  }, []);
+  }, [revealHero]);
+
+  // Hides the retry affordance and reveals the Hero the instant the video is actually
+  // rendering frames — the most reliable signal, independent of when the play()
+  // promise itself settles (which can lag slightly behind on some browsers).
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const onPlaying = () => {
+      setPlaybackBlocked(false);
+      revealHero();
+    };
+    video.addEventListener('playing', onPlaying);
+    return () => video.removeEventListener('playing', onPlaying);
+  }, [revealHero]);
 
   // The ONLY trigger for video.play()/currentTime: heroRevealStarted. Not
-  // preloaderDone, not heroReady, not canplay/loadeddata directly, not a timeout.
+  // preloaderDone, not heroReady, not canplay/loadeddata directly, not a timeout. But
+  // the text/CTA reveal itself is fully decoupled from whether that playback attempt
+  // ever succeeds — it's capped by HERO_TEXT_REVEAL_FALLBACK_MS regardless.
   useEffect(() => {
     if (!heroRevealStarted) return;
 
     if (prefersReducedMotion) {
-      setHeroStarted(true);
+      // No video attempt at all — stays on its poster, exactly as designed.
+      revealHero();
       return;
     }
 
     const video = videoRef.current;
-    if (!video) return;
-
-    if (video.readyState >= 2) {
-      startHeroVideo();
-    } else {
-      video.addEventListener('canplay', startHeroVideo, { once: true });
-      return () => video.removeEventListener('canplay', startHeroVideo);
+    if (video) {
+      if (video.readyState >= 2) {
+        startHeroVideo();
+      } else {
+        video.addEventListener('canplay', startHeroVideo, { once: true });
+      }
     }
-  }, [heroRevealStarted, prefersReducedMotion, startHeroVideo]);
+
+    const fallback = window.setTimeout(revealHero, HERO_TEXT_REVEAL_FALLBACK_MS);
+
+    return () => {
+      video?.removeEventListener('canplay', startHeroVideo);
+      window.clearTimeout(fallback);
+    };
+  }, [heroRevealStarted, prefersReducedMotion, startHeroVideo, revealHero]);
 
   // Gates the LEFT panel's entrance below `lg`, where it sits under the fold on short
   // viewports. Fires once, never re-triggers on scroll-out (once: true equivalent).
@@ -296,6 +350,22 @@ export default function HeroSection() {
         {/* Bottom fade reaches full black so the scene meets the panel below it with no
             visible seam or color mismatch — the panel is solid black too. */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent lg:from-black/30 lg:via-transparent lg:to-transparent" />
+
+        {/* Discreet manual-retry affordance for the rare case a browser (Safari iOS
+            under Low Power Mode, some private-browsing contexts) rejects even a
+            muted+playsInline play() attempt. A real tap satisfies any autoplay-gesture
+            policy; hidden again the instant 'playing' fires. Composition, text and CTAs
+            are already visible regardless — this only concerns the video itself. */}
+        {playbackBlocked && (
+          <button
+            type="button"
+            onClick={() => startHeroVideo()}
+            className="absolute right-4 top-20 z-[3] inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:bg-black/70 hover:text-white sm:right-6 lg:right-8 lg:top-24"
+          >
+            <Play className="h-3.5 w-3.5" aria-hidden="true" />
+            Reproducir video
+          </button>
+        )}
 
         {/* RIGHT — display phrase (design unchanged: font, sizes, colors, position at
             `lg`). Below `lg` it overlays the bottom of the visual scene instead of
