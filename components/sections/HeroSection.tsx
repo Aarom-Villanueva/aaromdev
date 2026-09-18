@@ -12,6 +12,21 @@ const REVEAL_FALLBACK_MS = 1200;
 // (Low Power Mode, certain contexts) can reject even a muted+playsInline attempt. This
 // is the hard cap: whichever of "video actually starts" or this timeout comes first.
 const HERO_TEXT_REVEAL_FALLBACK_MS = 700;
+
+// q_auto re-muxes the MP4 with a front-loaded moov atom (verified via ffprobe: the
+// original upload has moov at the very end, which iOS Safari's AVFoundation player can
+// refuse to start progressive playback on — Android/desktop are far more lenient about
+// this). Same H.264 High/yuv420p + AAC codec, ~57% smaller. The original upload is
+// untouched; this is a derived, cached transformation.
+const HERO_VIDEO_SRC = 'https://res.cloudinary.com/epea8suu/video/upload/q_auto/v1789140783/aarom-hero.mp4';
+const HERO_VIDEO_POSTER =
+  'https://res.cloudinary.com/epea8suu/video/upload/so_0,w_1600,q_auto,f_auto/v1789140783/aarom-hero.jpg';
+
+function logDev(label: string, data?: Record<string, unknown>) {
+  if (process.env.NODE_ENV === 'production') return;
+  // eslint-disable-next-line no-console
+  console.log(`[hero-video] ${label}`, data ?? {});
+}
 const cinematicEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 // RIGHT — four lines, explicitly sequential (not "all at once"). Desktop timing is the
@@ -78,6 +93,8 @@ export default function HeroSection() {
   // rejection, so a single manual retry (via the "Reproducir video" button) is possible
   // without ever allowing a duplicate/concurrent play() call.
   const videoAttemptRef = useRef(false);
+  // Guards the Hero-wide pointerdown/touchend fallback so it only ever fires once.
+  const heroTapResumeAttemptedRef = useRef(false);
   const [heroStarted, setHeroStarted] = useState(false);
   const [playbackBlocked, setPlaybackBlocked] = useState(false);
   const [panelInView, setPanelInView] = useState(false);
@@ -95,6 +112,11 @@ export default function HeroSection() {
     heroRevealedRef.current = true;
     setHeroStarted(true);
   }, []);
+
+  // Dev-only diagnostic (stripped from production by the NODE_ENV check inside logDev).
+  useEffect(() => {
+    logDev('prefers-reduced-motion', { prefersReducedMotion });
+  }, [prefersReducedMotion]);
 
   // Tells the Preloader (unchanged) that the video has buffered enough data — this only
   // affects when the Preloader is willing to start its exit, never playback itself.
@@ -123,11 +145,13 @@ export default function HeroSection() {
     };
   }, [prefersReducedMotion, markHeroReady]);
 
-  // The single protected entry point for playback. videoAttemptRef is set to true
-  // BEFORE awaiting play(), so no second/concurrent call can ever run this again —
-  // except a deliberate retry after a rejection (see the catch branch below), which is
-  // the only case that resets the guard. Never touches heroStarted: a failed or
-  // never-resolving play() must not be able to leave the Hero's text/CTAs hidden.
+  // The single protected entry point for the automatic (non-gesture) playback attempt.
+  // videoAttemptRef is set to true BEFORE awaiting play(), so no second/concurrent call
+  // can ever run this again — except a deliberate retry after a rejection (see the
+  // catch branch), which is the only case that resets the guard. Never resets
+  // currentTime (a fresh <video> already starts at 0, and a retry must never jump the
+  // playhead) and never touches heroStarted: a failed or never-resolving play() must
+  // not be able to leave the Hero's text/CTAs hidden.
   const startHeroVideo = useCallback(async () => {
     if (videoAttemptRef.current) return;
     const video = videoRef.current;
@@ -141,21 +165,65 @@ export default function HeroSection() {
     video.muted = true;
     video.defaultMuted = true;
     video.playsInline = true;
-    video.currentTime = 0;
 
     try {
       await video.play();
+      logDev('play() resolved', { readyState: video.readyState, networkState: video.networkState });
       // Belt-and-suspenders: the 'playing' event listener below is the primary path,
       // but if it already fired first this is a no-op (revealHero is guarded).
       revealHero();
-    } catch {
+    } catch (error) {
       // Safari (Low Power Mode, certain contexts) can reject even a muted+playsInline
       // play() call. The video simply stays on its poster/first frame — composition
       // and the text/CTA reveal (already handled by the fallback below) are unaffected.
-      // Allow exactly one manual retry via the "Reproducir video" button.
+      // Allow a manual retry via the "Reproducir video" button or the first tap/touch
+      // anywhere on the Hero.
+      const err = error instanceof Error ? error : null;
+      logDev('play() rejected', {
+        name: err?.name,
+        message: err?.message,
+        readyState: video.readyState,
+        networkState: video.networkState,
+        videoError: video.error ? { code: video.error.code, message: video.error.message } : null,
+      });
       videoAttemptRef.current = false;
       setPlaybackBlocked(true);
     }
+  }, [revealHero]);
+
+  // Manual, gesture-driven playback attempt: video.play() is the very first thing this
+  // function does, synchronously, with no `await` before it — required for Safari to
+  // credit the call to the real tap/click that invoked it (an async function's first
+  // `await` breaks that gesture chain). Used by the "Reproducir video" button and the
+  // Hero-wide pointerdown/touchend fallback.
+  const attemptManualVideoPlay = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    videoAttemptRef.current = true;
+    setPlaybackBlocked(false);
+
+    video
+      .play()
+      .then(() => {
+        logDev('manual play() resolved', { readyState: video.readyState });
+        revealHero();
+      })
+      .catch((error: unknown) => {
+        const err = error instanceof Error ? error : null;
+        logDev('manual play() rejected', {
+          name: err?.name,
+          message: err?.message,
+          readyState: video.readyState,
+          networkState: video.networkState,
+          videoError: video.error ? { code: video.error.code, message: video.error.message } : null,
+        });
+        videoAttemptRef.current = false;
+        setPlaybackBlocked(true);
+      });
   }, [revealHero]);
 
   // Hides the retry affordance and reveals the Hero the instant the video is actually
@@ -165,6 +233,7 @@ export default function HeroSection() {
     const video = videoRef.current;
     if (!video) return;
     const onPlaying = () => {
+      logDev('playing event');
       setPlaybackBlocked(false);
       revealHero();
     };
@@ -172,10 +241,12 @@ export default function HeroSection() {
     return () => video.removeEventListener('playing', onPlaying);
   }, [revealHero]);
 
-  // The ONLY trigger for video.play()/currentTime: heroRevealStarted. Not
+  // The ONLY trigger for the automatic video.play() attempt: heroRevealStarted. Not
   // preloaderDone, not heroReady, not canplay/loadeddata directly, not a timeout. But
   // the text/CTA reveal itself is fully decoupled from whether that playback attempt
-  // ever succeeds — it's capped by HERO_TEXT_REVEAL_FALLBACK_MS regardless.
+  // ever succeeds — it's capped by HERO_TEXT_REVEAL_FALLBACK_MS regardless. The actual
+  // play() call waits two animation frames so the curtain's own exit has settled in the
+  // browser's layout/paint before Safari is asked to start decoding.
   useEffect(() => {
     if (!heroRevealStarted) return;
 
@@ -186,21 +257,54 @@ export default function HeroSection() {
     }
 
     const video = videoRef.current;
-    if (video) {
-      if (video.readyState >= 2) {
-        startHeroVideo();
-      } else {
-        video.addEventListener('canplay', startHeroVideo, { once: true });
-      }
-    }
+    let raf1 = 0;
+    let raf2 = 0;
+
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        if (!video) return;
+        if (video.readyState >= 2) {
+          startHeroVideo();
+        } else {
+          video.addEventListener('canplay', startHeroVideo, { once: true });
+        }
+      });
+    });
 
     const fallback = window.setTimeout(revealHero, HERO_TEXT_REVEAL_FALLBACK_MS);
 
     return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
       video?.removeEventListener('canplay', startHeroVideo);
       window.clearTimeout(fallback);
     };
   }, [heroRevealStarted, prefersReducedMotion, startHeroVideo, revealHero]);
+
+  // Last-resort fallback: if the video is still paused by the time the visitor's first
+  // tap/click lands anywhere on the Hero, treat it as the real user gesture Safari
+  // wants and retry once. No-ops (and never re-arms) once the video is playing.
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const el = scope.current;
+    if (!el) return;
+
+    const tryResume = () => {
+      if (heroTapResumeAttemptedRef.current) return;
+      const video = videoRef.current;
+      if (!video || !video.paused) return;
+      heroTapResumeAttemptedRef.current = true;
+      logDev('resuming from first Hero pointerdown/touchend');
+      attemptManualVideoPlay();
+    };
+
+    el.addEventListener('pointerdown', tryResume, { once: true });
+    el.addEventListener('touchend', tryResume, { once: true });
+    return () => {
+      el.removeEventListener('pointerdown', tryResume);
+      el.removeEventListener('touchend', tryResume);
+    };
+  }, [prefersReducedMotion, attemptManualVideoPlay, scope]);
 
   // Gates the LEFT panel's entrance below `lg`, where it sits under the fold on short
   // viewports. Fires once, never re-triggers on scroll-out (once: true equivalent).
@@ -338,8 +442,8 @@ export default function HeroSection() {
         <video
           ref={videoRef}
           className="absolute inset-0 h-full w-full object-cover object-[center_22%] lg:object-center"
-          src="https://res.cloudinary.com/epea8suu/video/upload/v1789140783/aarom-hero.mp4"
-          poster="https://res.cloudinary.com/epea8suu/video/upload/so_0,w_1600,q_auto,f_auto/v1789140783/aarom-hero.jpg"
+          src={HERO_VIDEO_SRC}
+          poster={HERO_VIDEO_POSTER}
           preload="auto"
           autoPlay={false}
           loop
@@ -359,7 +463,7 @@ export default function HeroSection() {
         {playbackBlocked && (
           <button
             type="button"
-            onClick={() => startHeroVideo()}
+            onClick={attemptManualVideoPlay}
             className="absolute right-4 top-20 z-[3] inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:bg-black/70 hover:text-white sm:right-6 lg:right-8 lg:top-24"
           >
             <Play className="h-3.5 w-3.5" aria-hidden="true" />
