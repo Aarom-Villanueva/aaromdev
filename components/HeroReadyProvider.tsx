@@ -14,8 +14,10 @@ type HeroReadyContextValue = {
   preloaderDone: boolean;
   markPreloaderDone: () => void;
   /** Fires exactly once, from Preloader.tsx, the instant its black panel begins
-   * leaving the viewport (y: 0% -> -100%). This is the ONLY signal HeroSection uses
-   * to start video playback — never preloaderDone/heroReady/canplay/a timeout. */
+   * leaving the viewport (y: 0% -> -100%). This is the ONLY signal HeroSection uses to
+   * time its text/CTA reveal fallback — never heroReady/canplay/a timeout. The video's
+   * own play() attempt instead waits for preloaderDone (below), since it needs the
+   * curtain's exit animation to have actually finished, not just started. */
   heroRevealStarted: boolean;
   markHeroRevealStarted: () => void;
   brandOwner: BrandOwner;

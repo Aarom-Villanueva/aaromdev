@@ -12,6 +12,11 @@ const REVEAL_FALLBACK_MS = 1200;
 // (Low Power Mode, certain contexts) can reject even a muted+playsInline attempt. This
 // is the hard cap: whichever of "video actually starts" or this timeout comes first.
 const HERO_TEXT_REVEAL_FALLBACK_MS = 700;
+// Separate cap for the video specifically: if it's still paused this long after the
+// automatic attempt begins (rejected outright, or silently never actually started),
+// surface the "Toca para iniciar" overlay immediately rather than leaving the visitor
+// to discover by accident that a tap/scroll would have started it.
+const VIDEO_STILL_PAUSED_CHECK_MS = 700;
 
 // q_auto re-muxes the MP4 with a front-loaded moov atom (verified via ffprobe: the
 // original upload has moov at the very end, which iOS Safari's AVFoundation player can
@@ -81,7 +86,7 @@ export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [scope, animate] = useAnimate();
-  const { markHeroReady, heroRevealStarted } = useHeroReady();
+  const { markHeroReady, heroRevealStarted, preloaderDone } = useHeroReady();
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const rightAnimatedRef = useRef(false);
@@ -90,8 +95,9 @@ export default function HeroSection() {
   // video actually starting, or the fallback cap) gets there first.
   const heroRevealedRef = useRef(false);
   // True while a play() attempt is in flight or has succeeded; reset to false only on
-  // rejection, so a single manual retry (via the "Reproducir video" button) is possible
-  // without ever allowing a duplicate/concurrent play() call.
+  // rejection, so a manual retry (via the "Toca para iniciar" overlay, or the first
+  // tap/touch anywhere on the Hero) is possible without ever allowing a
+  // duplicate/concurrent play() call.
   const videoAttemptRef = useRef(false);
   // Guards the Hero-wide pointerdown/touchend fallback so it only ever fires once.
   const heroTapResumeAttemptedRef = useRef(false);
@@ -175,9 +181,9 @@ export default function HeroSection() {
     } catch (error) {
       // Safari (Low Power Mode, certain contexts) can reject even a muted+playsInline
       // play() call. The video simply stays on its poster/first frame — composition
-      // and the text/CTA reveal (already handled by the fallback below) are unaffected.
-      // Allow a manual retry via the "Reproducir video" button or the first tap/touch
-      // anywhere on the Hero.
+      // and the text/CTA reveal (already handled separately) are unaffected. The
+      // VIDEO_STILL_PAUSED_CHECK_MS check in the calling effect surfaces the "Toca
+      // para iniciar" overlay; the first tap/touch anywhere on the Hero also retries.
       const err = error instanceof Error ? error : null;
       logDev('play() rejected', {
         name: err?.name,
@@ -194,16 +200,19 @@ export default function HeroSection() {
   // Manual, gesture-driven playback attempt: video.play() is the very first thing this
   // function does, synchronously, with no `await` before it — required for Safari to
   // credit the call to the real tap/click that invoked it (an async function's first
-  // `await` breaks that gesture chain). Used by the "Reproducir video" button and the
-  // Hero-wide pointerdown/touchend fallback.
+  // `await`, a setTimeout, or a chained promise breaks that gesture chain). Used
+  // directly by the "Toca para iniciar" overlay's onClick and the Hero-wide
+  // pointerdown/touchend fallback. Shares videoAttemptRef with startHeroVideo so the
+  // two can never both have a call in flight at once.
   const attemptManualVideoPlay = useCallback(() => {
+    if (videoAttemptRef.current) return;
     const video = videoRef.current;
     if (!video) return;
 
+    videoAttemptRef.current = true;
     video.muted = true;
     video.defaultMuted = true;
     video.playsInline = true;
-    videoAttemptRef.current = true;
     setPlaybackBlocked(false);
 
     video
@@ -241,24 +250,38 @@ export default function HeroSection() {
     return () => video.removeEventListener('playing', onPlaying);
   }, [revealHero]);
 
-  // The ONLY trigger for the automatic video.play() attempt: heroRevealStarted. Not
-  // preloaderDone, not heroReady, not canplay/loadeddata directly, not a timeout. But
-  // the text/CTA reveal itself is fully decoupled from whether that playback attempt
-  // ever succeeds — it's capped by HERO_TEXT_REVEAL_FALLBACK_MS regardless. The actual
-  // play() call waits two animation frames so the curtain's own exit has settled in the
-  // browser's layout/paint before Safari is asked to start decoding.
+  // The text/CTA reveal is keyed on heroRevealStarted (the instant the curtain begins
+  // leaving — unchanged from before, already confirmed working) and is fully decoupled
+  // from whether the video ever plays: capped by HERO_TEXT_REVEAL_FALLBACK_MS
+  // regardless of what the separate video-attempt effect below is doing.
   useEffect(() => {
     if (!heroRevealStarted) return;
 
     if (prefersReducedMotion) {
-      // No video attempt at all — stays on its poster, exactly as designed.
       revealHero();
       return;
     }
 
+    const fallback = window.setTimeout(revealHero, HERO_TEXT_REVEAL_FALLBACK_MS);
+    return () => window.clearTimeout(fallback);
+  }, [heroRevealStarted, prefersReducedMotion, revealHero]);
+
+  // The automatic video.play() attempt is a separate concern, keyed on preloaderDone —
+  // the curtain's real exit animation actually finishing (Preloader's phase reaching
+  // 'done'), not just beginning to leave. Calling play() while that animation is still
+  // mid-flight is exactly what was showing up as a silent, unexplained rejection on
+  // some iPhones. Two rAFs after that let the resulting layout/paint settle before
+  // Safari is asked to start decoding. If the video is still paused
+  // VIDEO_STILL_PAUSED_CHECK_MS later — rejected outright, or silently stalled —
+  // the "Toca para iniciar" overlay appears immediately, without waiting for the
+  // visitor to stumble onto the tap/scroll fallback below by accident.
+  useEffect(() => {
+    if (!preloaderDone || prefersReducedMotion) return;
+
     const video = videoRef.current;
     let raf1 = 0;
     let raf2 = 0;
+    let blockedCheck = 0;
 
     raf1 = requestAnimationFrame(() => {
       raf2 = requestAnimationFrame(() => {
@@ -268,18 +291,26 @@ export default function HeroSection() {
         } else {
           video.addEventListener('canplay', startHeroVideo, { once: true });
         }
+
+        blockedCheck = window.setTimeout(() => {
+          if (video.paused) {
+            logDev('still paused after check window — showing tap overlay', {
+              readyState: video.readyState,
+              networkState: video.networkState,
+            });
+            setPlaybackBlocked(true);
+          }
+        }, VIDEO_STILL_PAUSED_CHECK_MS);
       });
     });
-
-    const fallback = window.setTimeout(revealHero, HERO_TEXT_REVEAL_FALLBACK_MS);
 
     return () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
+      window.clearTimeout(blockedCheck);
       video?.removeEventListener('canplay', startHeroVideo);
-      window.clearTimeout(fallback);
     };
-  }, [heroRevealStarted, prefersReducedMotion, startHeroVideo, revealHero]);
+  }, [preloaderDone, prefersReducedMotion, startHeroVideo]);
 
   // Last-resort fallback: if the video is still paused by the time the visitor's first
   // tap/click lands anywhere on the Hero, treat it as the real user gesture Safari
@@ -445,7 +476,10 @@ export default function HeroSection() {
           src={HERO_VIDEO_SRC}
           poster={HERO_VIDEO_POSTER}
           preload="auto"
-          autoPlay={false}
+          // Conditional, not the static `autoPlay` JSX shorthand: reduced-motion must
+          // stay on its poster with no autoplay attempt at all, matching the effect
+          // below — a bare `autoPlay` attribute would bypass that entirely.
+          autoPlay={!prefersReducedMotion}
           loop
           muted
           playsInline
@@ -455,19 +489,25 @@ export default function HeroSection() {
             visible seam or color mismatch — the panel is solid black too. */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent lg:from-black/30 lg:via-transparent lg:to-transparent" />
 
-        {/* Discreet manual-retry affordance for the rare case a browser (Safari iOS
-            under Low Power Mode, some private-browsing contexts) rejects even a
-            muted+playsInline play() attempt. A real tap satisfies any autoplay-gesture
-            policy; hidden again the instant 'playing' fires. Composition, text and CTAs
-            are already visible regardless — this only concerns the video itself. */}
+        {/* Discreet tap-to-play overlay for the confirmed real-world case: Safari iOS
+            rejects the autoplay attempt (Low Power Mode, certain contexts) until it
+            receives a genuine gesture. Covers the video's own area so a tap anywhere
+            on it counts; poster stays visible underneath (transparent, not a scrim) so
+            nothing about the composition is hidden — text and CTAs are already visible
+            regardless, this only concerns the video itself. Appears immediately (no
+            waiting for the visitor to discover scroll/tap by accident); removed the
+            instant the native 'playing' event fires. */}
         {playbackBlocked && (
           <button
             type="button"
             onClick={attemptManualVideoPlay}
-            className="absolute right-4 top-20 z-[3] inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/50 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-sm transition-colors hover:bg-black/70 hover:text-white sm:right-6 lg:right-8 lg:top-24"
+            aria-label="Reproducir video de fondo"
+            className="hero-play-overlay absolute inset-0 z-[3] flex items-center justify-center"
           >
-            <Play className="h-3.5 w-3.5" aria-hidden="true" />
-            Reproducir video
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/60 px-5 py-2.5 text-sm font-medium text-white/90 backdrop-blur-md">
+              <Play className="h-4 w-4" aria-hidden="true" />
+              Toca para iniciar
+            </span>
           </button>
         )}
 

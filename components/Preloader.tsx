@@ -116,7 +116,10 @@ export default function Preloader() {
 
   // Enter curtainExit exactly once the black panel is about to start y: 0% -> -100%.
   // This is the single instant heroRevealStarted fires — HeroSection uses only this
-  // signal to begin video playback, never preloaderDone/heroReady/canplay/a timeout.
+  // signal to begin its text/CTA reveal timing. The video's own play() attempt instead
+  // waits for preloaderDone (phase reaching 'done', below) — the curtain's exit
+  // animation actually finishing, not just beginning — since calling play() while it's
+  // still mid-flight was producing unexplained rejections on some iPhones.
   const beginCurtainExit = () => {
     markHeroRevealStarted();
     // Safety net for the reduced-motion path, which never travels to the Navbar rect
