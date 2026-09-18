@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Reveal } from '@/components/motion/Reveal';
 import { ArrowUpRight, Instagram, Mail } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/social/SocialLinks';
@@ -12,8 +13,17 @@ const instagramUrl = 'https://www.instagram.com/aaromcim_/';
 export default function ContactSection() {
   return (
     <section id="contacto" className="relative overflow-hidden bg-[#030303] py-32 lg:py-48">
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-end opacity-[0.1]">
-        <img src="/images/aarom-coding.jpeg" alt="" aria-hidden="true" className="h-full w-auto select-none object-contain object-right" style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 40%, black 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 40%, black 100%)' }} />
+      <div className="absolute inset-0 pointer-events-none opacity-[0.1]">
+        <Image
+          src="/images/aarom-coding.jpeg"
+          alt=""
+          aria-hidden="true"
+          fill
+          sizes="100vw"
+          loading="lazy"
+          className="select-none object-contain object-right"
+          style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 40%, black 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 40%, black 100%)' }}
+        />
       </div>
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_25%_50%,rgba(120,157,255,0.05)_0%,transparent_55%)]" />
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-10">

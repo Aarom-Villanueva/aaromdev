@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Reveal } from '@/components/motion/Reveal';
 import { MapPin } from 'lucide-react';
 
@@ -9,7 +10,7 @@ export default function ProfileSection() {
   return (
     <section id="perfil" className="relative overflow-hidden bg-[#111318] py-28 lg:py-36">
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-12 lg:gap-20 lg:px-10">
-        <Reveal className="lg:col-span-5"><div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-white/[0.07] bg-[#08090B]"><img src="/images/aarom.png" alt="Aarom Villanueva trabajando" className="h-full w-full object-cover object-center opacity-75" /><div className="absolute inset-0 bg-gradient-to-t from-[#08090B] via-transparent to-transparent" /><p className="absolute bottom-6 left-6 text-label text-white/55">Aarom Villanueva</p></div></Reveal>
+        <Reveal className="lg:col-span-5"><div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-white/[0.07] bg-[#08090B]"><Image src="/images/aarom.png" alt="Aarom Villanueva trabajando" fill sizes="(min-width: 1024px) 40vw, 100vw" loading="lazy" className="object-cover object-center opacity-75" /><div className="absolute inset-0 bg-gradient-to-t from-[#08090B] via-transparent to-transparent" /><p className="absolute bottom-6 left-6 text-label text-white/55">Aarom Villanueva</p></div></Reveal>
         <div className="lg:col-span-7">
           <Reveal><span className="section-label">Perfil</span></Reveal>
           <Reveal delay={0.05}><h2 className="text-headline mb-7 text-white">Sobre mí</h2></Reveal>

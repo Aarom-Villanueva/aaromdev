@@ -1,9 +1,12 @@
 'use client';
 
-import { AnimatePresence, motion, useInView } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import AutoScrollImage from './AutoScrollImage';
+import { useIsInViewport } from '@/hooks/useIsInViewport';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { featuredProduct, secondaryProducts } from '@/data/products';
 import type { MediaItem, Product } from '@/data/products';
 
@@ -73,6 +76,8 @@ function FeaturedProductCard({ product }: { product: Product }) {
               <AutoScrollImage
                 src={product.image}
                 alt={`Captura de ${product.name} en escritorio`}
+                width={product.imageWidth}
+                height={product.imageHeight}
               />
             </div>
           </div>
@@ -85,16 +90,24 @@ function FeaturedProductCard({ product }: { product: Product }) {
 function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeItem = items[activeIndex];
-  const showcaseRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(showcaseRef, { amount: 0.3 });
+  const { ref: showcaseRef, isInView } = useIsInViewport<HTMLDivElement>({ amount: 0.3 });
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [tabHidden, setTabHidden] = useState(false);
 
   useEffect(() => {
-    if (items.length <= 1) return;
+    const handleVisibility = () => setTabHidden(document.hidden);
+    handleVisibility();
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
+  useEffect(() => {
+    if (items.length <= 1 || !isInView || prefersReducedMotion || tabHidden) return;
     const timer = window.setInterval(() => {
       setActiveIndex((current) => (current + 1) % items.length);
     }, 10000);
     return () => window.clearInterval(timer);
-  }, [activeIndex, items.length]);
+  }, [items.length, isInView, prefersReducedMotion, tabHidden]);
 
   return (
     <div ref={showcaseRef} className="relative flex aspect-video w-full flex-col overflow-hidden bg-[#0D0F13]">
@@ -133,32 +146,77 @@ function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[]
                 <video
                   src={activeItem.src}
                   poster={activeItem.poster}
-                  preload="metadata"
-                  autoPlay
+                  preload="none"
+                  autoPlay={!prefersReducedMotion}
                   loop
                   muted
                   playsInline
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <img
+                <Image
                   src={activeItem.poster ?? activeItem.src}
                   alt={`Captura de ${name} — ${activeItem.label}`}
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="(min-width: 1024px) 600px, 100vw"
+                  loading="lazy"
+                  className="object-cover"
                 />
               )
             ) : activeItem.scroll ? (
-              <AutoScrollImage src={activeItem.src} alt={`Captura de ${name} — ${activeItem.label}`} />
-            ) : (
-              <img
+              <AutoScrollImage
                 src={activeItem.src}
                 alt={`Captura de ${name} — ${activeItem.label}`}
-                className="h-full w-full object-cover object-top"
+                width={activeItem.width ?? 1920}
+                height={activeItem.height ?? 1080}
+              />
+            ) : (
+              <Image
+                src={activeItem.src}
+                alt={`Captura de ${name} — ${activeItem.label}`}
+                fill
+                sizes="(min-width: 1024px) 600px, 100vw"
+                loading="lazy"
+                className="object-cover object-top"
               />
             )}
           </motion.div>
         </AnimatePresence>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D0F13] to-transparent" />
+      </div>
+    </div>
+  );
+}
+
+function VantaShowcase() {
+  const { ref, isInView } = useIsInViewport<HTMLDivElement>({ amount: 0.3 });
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const shouldPlay = isInView && !prefersReducedMotion;
+
+  return (
+    <div ref={ref} className="relative aspect-video overflow-hidden rounded-lg bg-[#08090C] p-3">
+      <div className="relative h-full w-full">
+        {shouldPlay ? (
+          <video
+            src="https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4"
+            poster="/screenshots/vanta-placeholder.png"
+            preload="none"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="h-full w-full object-contain object-center scale-95"
+          />
+        ) : (
+          <Image
+            src="/screenshots/vanta-placeholder.png"
+            alt="Vista previa de VANTA-01"
+            fill
+            sizes="(min-width: 768px) 50vw, 100vw"
+            loading="lazy"
+            className="object-contain object-center scale-95"
+          />
+        )}
       </div>
     </div>
   );
@@ -172,22 +230,16 @@ function SecondaryProductCard({ product, index }: { product: Product; index: num
           <InteractiveShowcase name={product.name} items={product.mediaItems} />
         ) : product.slug === 'nara' ? (
           <div className="relative aspect-video w-full h-full overflow-hidden bg-[#0D0F13]">
-            <AutoScrollImage src={product.image} alt={`Captura de ${product.name}`} />
+            <AutoScrollImage
+              src={product.image}
+              alt={`Captura de ${product.name}`}
+              width={product.imageWidth}
+              height={product.imageHeight}
+            />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D0F13] to-transparent" />
           </div>
         ) : product.slug === 'vanta-01' ? (
-          <div className="relative aspect-video overflow-hidden rounded-lg bg-[#08090C] p-3">
-            <video
-              src="https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4"
-              poster="/screenshots/vanta-placeholder.png"
-              preload="metadata"
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="h-full w-full object-contain object-center scale-95"
-            />
-          </div>
+          <VantaShowcase />
         ) : (
           <div className="relative aspect-video overflow-hidden bg-[#0D0F13]">
             <ImageWithFallback
