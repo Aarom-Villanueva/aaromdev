@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowUpRight, Play } from 'lucide-react';
 import AutoScrollImage from './AutoScrollImage';
 import { useIsInViewport } from '@/hooks/useIsInViewport';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
@@ -87,6 +87,104 @@ function FeaturedProductCard({ product }: { product: Product }) {
   );
 }
 
+function ShowcaseVideo({
+  src,
+  poster,
+  alt,
+  shouldPlay,
+  className,
+}: {
+  src: string;
+  poster?: string;
+  alt: string;
+  shouldPlay: boolean;
+  className?: string;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [failed, setFailed] = useState(false);
+  const [needsManualPlay, setNeedsManualPlay] = useState(false);
+
+  useEffect(() => {
+    if (!shouldPlay || failed) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    let cancelled = false;
+    video.muted = true;
+    video.playsInline = true;
+
+    video
+      .play()
+      .then(() => {
+        if (!cancelled) setNeedsManualPlay(false);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        const domError = error as DOMException;
+        console.warn(`[ShowcaseVideo] autoplay rechazado (${domError?.name}): ${domError?.message}`, { src });
+        setNeedsManualPlay(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shouldPlay, failed, src]);
+
+  const handleError = () => {
+    const video = videoRef.current;
+    console.warn('[ShowcaseVideo] error al cargar el video', {
+      src,
+      errorCode: video?.error?.code,
+      errorMessage: video?.error?.message,
+      readyState: video?.readyState,
+      networkState: video?.networkState,
+    });
+    setFailed(true);
+  };
+
+  const handleManualPlay = () => {
+    videoRef.current
+      ?.play()
+      .then(() => setNeedsManualPlay(false))
+      .catch((error: unknown) => {
+        const domError = error as DOMException;
+        console.warn(`[ShowcaseVideo] reproducción manual rechazada (${domError?.name}): ${domError?.message}`, { src });
+      });
+  };
+
+  if (failed && poster) {
+    return <img src={poster} alt={alt} className={className} />;
+  }
+
+  return (
+    <div className="relative h-full w-full">
+      <video
+        ref={videoRef}
+        src={src}
+        poster={poster}
+        preload="none"
+        loop
+        muted
+        playsInline
+        onError={handleError}
+        className={className}
+      />
+      {needsManualPlay && !failed ? (
+        <button
+          type="button"
+          onClick={handleManualPlay}
+          aria-label={`Reproducir video — ${alt}`}
+          className="absolute inset-0 flex items-center justify-center bg-black/30 transition-colors duration-200 hover:bg-black/40"
+        >
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-black shadow-lg">
+            <Play className="h-5 w-5 translate-x-0.5" fill="currentColor" />
+          </span>
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeItem = items[activeIndex];
@@ -143,14 +241,11 @@ function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[]
           >
             {activeItem.type === 'video' ? (
               isInView ? (
-                <video
+                <ShowcaseVideo
                   src={activeItem.src}
                   poster={activeItem.poster}
-                  preload="none"
-                  autoPlay={!prefersReducedMotion}
-                  loop
-                  muted
-                  playsInline
+                  alt={`${name} — ${activeItem.label}`}
+                  shouldPlay={!prefersReducedMotion}
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -197,14 +292,11 @@ function VantaShowcase() {
     <div ref={ref} className="relative aspect-video overflow-hidden rounded-lg bg-[#08090C] p-3">
       <div className="relative h-full w-full">
         {shouldPlay ? (
-          <video
-            src="https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4"
+          <ShowcaseVideo
+            src="https://res.cloudinary.com/epea8suu/video/upload/f_auto,q_auto/v1789140959/vanta.mp4"
             poster="/screenshots/vanta-placeholder.png"
-            preload="none"
-            autoPlay
-            loop
-            muted
-            playsInline
+            alt="Vista previa de VANTA-01"
+            shouldPlay
             className="h-full w-full object-contain object-center scale-95"
           />
         ) : (

@@ -47,19 +47,19 @@ export const secondaryProducts: Product[] = [
     mediaItems: [
       {
         type: 'video',
-        src: 'https://res.cloudinary.com/epea8suu/video/upload/v1789140873/ferramenta-home.mp4',
+        src: 'https://res.cloudinary.com/epea8suu/video/upload/f_auto,q_auto/v1789140873/ferramenta-home.mp4',
         label: 'Inicio',
         poster: 'https://res.cloudinary.com/epea8suu/video/upload/so_0,w_960,q_auto,f_auto/v1789140873/ferramenta-home.jpg',
       },
       {
         type: 'video',
-        src: 'https://res.cloudinary.com/epea8suu/video/upload/v1789140852/ferramenta-generadores.mp4',
+        src: 'https://res.cloudinary.com/epea8suu/video/upload/f_auto,q_auto/v1789140852/ferramenta-generadores.mp4',
         label: 'Generadores',
         poster: 'https://res.cloudinary.com/epea8suu/video/upload/so_0,w_960,q_auto,f_auto/v1789140852/ferramenta-generadores.jpg',
       },
       {
         type: 'video',
-        src: 'https://res.cloudinary.com/epea8suu/video/upload/v1789140904/ferramenta-ventiladores.mp4',
+        src: 'https://res.cloudinary.com/epea8suu/video/upload/f_auto,q_auto/v1789140904/ferramenta-ventiladores.mp4',
         label: 'Ventiladores',
         poster: 'https://res.cloudinary.com/epea8suu/video/upload/so_0,w_960,q_auto,f_auto/v1789140904/ferramenta-ventiladores.jpg',
       },
@@ -79,13 +79,13 @@ export const secondaryProducts: Product[] = [
       { type: 'image', src: '/screenshots/kawsay-dashboard.png', label: 'Dashboard', width: 1920, height: 1012 },
       {
         type: 'video',
-        src: 'https://res.cloudinary.com/epea8suu/video/upload/v1789140926/kawsay-clientes.mp4',
+        src: 'https://res.cloudinary.com/epea8suu/video/upload/f_auto,q_auto/v1789140926/kawsay-clientes.mp4',
         label: 'Historial Clientes',
         poster: 'https://res.cloudinary.com/epea8suu/video/upload/so_0,w_960,q_auto,f_auto/v1789140926/kawsay-clientes.jpg',
       },
       {
         type: 'video',
-        src: 'https://res.cloudinary.com/epea8suu/video/upload/v1789140942/kawsay-tecnicos.mp4',
+        src: 'https://res.cloudinary.com/epea8suu/video/upload/f_auto,q_auto/v1789140942/kawsay-tecnicos.mp4',
         label: 'Historial Técnicos',
         poster: 'https://res.cloudinary.com/epea8suu/video/upload/so_0,w_960,q_auto,f_auto/v1789140942/kawsay-tecnicos.jpg',
       },
