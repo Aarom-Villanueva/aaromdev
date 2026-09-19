@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Play } from 'lucide-react';
 import AutoScrollImage from './AutoScrollImage';
@@ -105,9 +105,13 @@ function ShowcaseVideo({
   const [needsManualPlay, setNeedsManualPlay] = useState(false);
 
   useEffect(() => {
-    if (!shouldPlay || failed) return;
     const video = videoRef.current;
     if (!video) return;
+
+    if (!shouldPlay || failed) {
+      video.pause();
+      return;
+    }
 
     let cancelled = false;
     video.muted = true;
@@ -162,7 +166,7 @@ function ShowcaseVideo({
         ref={videoRef}
         src={src}
         poster={poster}
-        preload="none"
+        preload="auto"
         loop
         muted
         playsInline
@@ -187,10 +191,17 @@ function ShowcaseVideo({
 
 function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const activeItem = items[activeIndex];
   const { ref: showcaseRef, isInView } = useIsInViewport<HTMLDivElement>({ amount: 0.3 });
   const prefersReducedMotion = usePrefersReducedMotion();
   const [tabHidden, setTabHidden] = useState(false);
+  const mountedRef = useRef<Set<number>>(new Set());
+
+  if (isInView) {
+    mountedRef.current.add(activeIndex);
+    if (items.length > 1) {
+      mountedRef.current.add((activeIndex + 1) % items.length);
+    }
+  }
 
   useEffect(() => {
     const handleVisibility = () => setTabHidden(document.hidden);
@@ -230,53 +241,57 @@ function InteractiveShowcase({ name, items }: { name: string; items: MediaItem[]
       </div>
 
       <div className="relative flex-1 overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeItem.src}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35, ease: 'easeInOut' }}
-            className="h-full w-full"
-          >
-            {activeItem.type === 'video' ? (
-              isInView ? (
-                <ShowcaseVideo
-                  src={activeItem.src}
-                  poster={activeItem.poster}
-                  alt={`${name} — ${activeItem.label}`}
-                  shouldPlay={!prefersReducedMotion}
-                  className="h-full w-full object-cover"
+        {items.map((item, index) => {
+          const isActive = index === activeIndex;
+          const isMounted = mountedRef.current.has(index);
+
+          return (
+            <div
+              key={item.label}
+              aria-hidden={!isActive}
+              className={`absolute inset-0 transition-opacity duration-300 ease-in-out ${
+                isActive ? 'opacity-100' : 'pointer-events-none opacity-0'
+              }`}
+            >
+              {item.type === 'video' ? (
+                isMounted ? (
+                  <ShowcaseVideo
+                    src={item.src}
+                    poster={item.poster}
+                    alt={`${name} — ${item.label}`}
+                    shouldPlay={isActive && isInView && !prefersReducedMotion}
+                    className="h-full w-full object-cover"
+                  />
+                ) : item.poster ? (
+                  <Image
+                    src={item.poster}
+                    alt={`Captura de ${name} — ${item.label}`}
+                    fill
+                    sizes="(min-width: 1024px) 600px, 100vw"
+                    loading="lazy"
+                    className="object-cover"
+                  />
+                ) : null
+              ) : item.scroll ? (
+                <AutoScrollImage
+                  src={item.src}
+                  alt={`Captura de ${name} — ${item.label}`}
+                  width={item.width ?? 1920}
+                  height={item.height ?? 1080}
                 />
               ) : (
                 <Image
-                  src={activeItem.poster ?? activeItem.src}
-                  alt={`Captura de ${name} — ${activeItem.label}`}
+                  src={item.src}
+                  alt={`Captura de ${name} — ${item.label}`}
                   fill
                   sizes="(min-width: 1024px) 600px, 100vw"
                   loading="lazy"
-                  className="object-cover"
+                  className="object-cover object-top"
                 />
-              )
-            ) : activeItem.scroll ? (
-              <AutoScrollImage
-                src={activeItem.src}
-                alt={`Captura de ${name} — ${activeItem.label}`}
-                width={activeItem.width ?? 1920}
-                height={activeItem.height ?? 1080}
-              />
-            ) : (
-              <Image
-                src={activeItem.src}
-                alt={`Captura de ${name} — ${activeItem.label}`}
-                fill
-                sizes="(min-width: 1024px) 600px, 100vw"
-                loading="lazy"
-                className="object-cover object-top"
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
+              )}
+            </div>
+          );
+        })}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D0F13] to-transparent" />
       </div>
     </div>
