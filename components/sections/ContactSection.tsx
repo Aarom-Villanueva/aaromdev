@@ -4,11 +4,11 @@ import Image from 'next/image';
 import { Reveal } from '@/components/motion/Reveal';
 import { ArrowUpRight, Instagram, Mail } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/social/SocialLinks';
+import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL, WHATSAPP_DISPLAY, WHATSAPP_URL } from '@/data/contact';
 
-const email = 'aaromvillanueva18@gmail.com';
-const whatsappUrl =
-  'https://wa.me/51987164141?text=Hola%20Aarom,%20vi%20tu%20portafolio%20y%20me%20gustar%C3%ADa%20conversar';
-const instagramUrl = 'https://www.instagram.com/aaromcim_/';
+const email = CONTACT_EMAIL;
+const whatsappUrl = WHATSAPP_URL;
+const instagramUrl = INSTAGRAM_URL;
 
 export default function ContactSection() {
   return (
@@ -39,7 +39,7 @@ export default function ContactSection() {
               rel="noopener noreferrer"
               className="btn-secondary group"
             >
-              <WhatsAppIcon />+51 987 164 141
+              <WhatsAppIcon />{WHATSAPP_DISPLAY}
             </a>
             <a
               href={instagramUrl}
@@ -47,7 +47,7 @@ export default function ContactSection() {
               rel="noopener noreferrer"
               className="btn-secondary group"
             >
-              <Instagram className="h-4 w-4" aria-hidden="true" />@aaromcim_
+              <Instagram className="h-4 w-4" aria-hidden="true" />{INSTAGRAM_HANDLE}
             </a>
           </div></Reveal>
         </div>

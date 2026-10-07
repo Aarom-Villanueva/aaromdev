@@ -388,7 +388,7 @@ function SecondaryProductCard({ product, index }: { product: Product; index: num
   );
 }
 
-export default function ProductsSection() {
+export default function ProjectsSection() {
   return (
     <section id="proyectos" className="relative bg-[#08090B] pt-16 pb-24 lg:pt-24 lg:pb-36">
       <motion.div {...sectionFade} className="mx-auto max-w-7xl px-6 lg:px-10">

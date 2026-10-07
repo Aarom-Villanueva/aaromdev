@@ -1,10 +1,10 @@
 import { Mail } from 'lucide-react';
 import { InstagramIcon, WhatsAppIcon } from '@/components/social/SocialLinks';
+import { CONTACT_EMAIL, INSTAGRAM_URL, WHATSAPP_URL } from '@/data/contact';
 
-const email = 'aaromvillanueva18@gmail.com';
-const whatsappUrl =
-  'https://wa.me/51987164141?text=Hola%20Aarom,%20vi%20tu%20portafolio%20y%20me%20gustar%C3%ADa%20conversar';
-const instagramUrl = 'https://www.instagram.com/aaromcim_/';
+const email = CONTACT_EMAIL;
+const whatsappUrl = WHATSAPP_URL;
+const instagramUrl = INSTAGRAM_URL;
 
 export default function Footer() {
   return (

@@ -298,6 +298,60 @@
     from { object-position: top; }
     to { object-position: bottom; }
   }
+
+  /* Services pricing grid: on desktop each card subgrids the parent's row
+     tracks, so the name/description/price/button/divider/list of all three
+     cards line up row-for-row — heights come purely from content (the row
+     stretches to the tallest card), never a fixed/clipped height. Mobile
+     just stacks the cards as a normal flex column. */
+  .services-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1200px;
+    margin-inline: auto;
+  }
+
+  .service-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border-radius: 20px;
+    padding: 30px;
+    background-color: #0A0C0F;
+    border: 1px solid rgba(113, 119, 132, 0.16);
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+  }
+
+  .service-card:hover {
+    border-color: rgba(113, 119, 132, 0.32);
+  }
+
+  .service-card--featured {
+    border-color: rgba(120, 157, 255, 0.35);
+    background-color: rgba(120, 157, 255, 0.045);
+  }
+
+  .service-card--featured:hover {
+    border-color: rgba(120, 157, 255, 0.55);
+  }
+
+  @media (min-width: 1024px) {
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: repeat(7, auto);
+      column-gap: 24px;
+      row-gap: 20px;
+    }
+
+    .service-card {
+      display: grid;
+      grid-row: 1 / span 7;
+      grid-template-rows: subgrid;
+      align-content: start;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

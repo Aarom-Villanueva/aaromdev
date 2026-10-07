@@ -9,6 +9,7 @@ import { useHeroReady } from '@/components/HeroReadyProvider';
 const navLinks = [
   { label: 'Inicio', href: '#hero' },
   { label: 'Proyectos', href: '#proyectos' },
+  { label: 'Servicios', href: '#servicios' },
   { label: 'Capacidades', href: '#capacidades' },
   { label: 'Perfil', href: '#perfil' },
   { label: 'Contacto', href: '#contacto' },
