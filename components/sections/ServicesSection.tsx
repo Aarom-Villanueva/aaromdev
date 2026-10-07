@@ -2,11 +2,18 @@
 
 import { Reveal, StaggerReveal, fadeUp } from '@/components/motion/Reveal';
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { Check, LayoutGrid, Monitor, Store } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/social/SocialLinks';
 import { buildWhatsAppUrl } from '@/data/contact';
 import { services } from '@/data/services';
 import type { Service } from '@/data/services';
+
+const serviceIcons: Record<Service['slug'], LucideIcon> = {
+  landing: Monitor,
+  ecommerce: Store,
+  sistemas: LayoutGrid,
+};
 
 function PriceBlock({ service }: { service: Service }) {
   const isFixedPrice = Boolean(service.priceEyebrow);
@@ -30,9 +37,13 @@ function PriceBlock({ service }: { service: Service }) {
 
 function ServiceCard({ service }: { service: Service }) {
   const whatsappUrl = buildWhatsAppUrl(service.whatsappMessage);
+  const Icon = serviceIcons[service.slug];
 
   return (
     <motion.div variants={fadeUp} className={`service-card ${service.featured ? 'service-card--featured' : ''}`}>
+      <div className="service-icon">
+        <Icon className="h-[22px] w-[22px]" strokeWidth={1.75} aria-hidden="true" />
+      </div>
       <h3 className="text-lg font-semibold text-white/90">{service.name}</h3>
       <p className="text-sm leading-relaxed text-white/55">{service.description}</p>
       <PriceBlock service={service} />
