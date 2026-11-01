@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { Wordmark } from '@/components/brand/Logo';
@@ -20,6 +21,10 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { brandOwner } = useHeroReady();
   const brandHiddenForPreloader = brandOwner === 'preloader';
+  const pathname = usePathname();
+  const isHome = pathname === '/';
+  // Section anchors live on the home page; from any other page they point back to it.
+  const resolve = (hash: string) => (isHome ? hash : `/${hash}`);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -41,7 +46,9 @@ export default function Navbar() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        // --promo-bar-h is set by PromoBar while it's visible, so the bar never covers the menu.
+        style={{ top: 'var(--promo-bar-h, 0px)' }}
+        className={`fixed left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
             ? 'border-b border-white/5 bg-black/60 backdrop-blur-xl'
             : 'bg-transparent'
@@ -50,7 +57,7 @@ export default function Navbar() {
         <nav className="mx-auto flex h-16 max-w-7xl items-center px-6 lg:px-10">
           <div className="relative flex w-full items-center">
             <a
-              href="#hero"
+              href={isHome ? '#hero' : '/'}
               id="navbar-brand-target"
               aria-label="Aarom Villanueva — Inicio"
               aria-hidden={brandHiddenForPreloader || undefined}
@@ -68,7 +75,7 @@ export default function Navbar() {
               {navLinks.map((link) => (
                 <a
                   key={link.href}
-                  href={link.href}
+                  href={resolve(link.href)}
                   className="px-3.5 py-2 text-[13px] font-medium text-white/55 transition-colors duration-200 hover:text-white"
                 >
                   {link.label}
@@ -77,7 +84,7 @@ export default function Navbar() {
             </div>
 
             <div className="ml-auto flex items-center gap-3">
-              <a href="#contacto" className="hidden sm:inline-flex btn-primary !py-2 !px-5 !text-[13px]">
+              <a href={resolve('#contacto')} className="hidden sm:inline-flex btn-primary !py-2 !px-5 !text-[13px]">
                 Hablemos
               </a>
               <button
@@ -122,7 +129,7 @@ export default function Navbar() {
               {navLinks.map((link) => (
                 <motion.a
                   key={link.href}
-                  href={link.href}
+                  href={resolve(link.href)}
                   onClick={() => setMenuOpen(false)}
                   variants={{
                     hidden: { opacity: 0, y: 30 },
@@ -134,7 +141,7 @@ export default function Navbar() {
                 </motion.a>
               ))}
               <motion.a
-                href="#contacto"
+                href={resolve('#contacto')}
                 onClick={() => setMenuOpen(false)}
                 variants={{
                   hidden: { opacity: 0, y: 30 },
