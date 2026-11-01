@@ -39,14 +39,13 @@ const cinematicEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
 // scale together), which lands mobile within its own slightly-faster target range.
 // RIGHT_SPEED_SCALE scales every one of those (line starts, line duration, char
 // stagger) by the same factor so the block reads as evenly faster/slower, not just
-// shifted earlier/later. Currently ~22.5% faster than the previous pass (0.91), which
-// had itself been tuned ~17.5% slower than the original baseline (1.175) — the
-// original felt right but the first slow-down overshot, so this nets out net-faster
-// than baseline overall while still keeping the same line-by-line stagger shape.
+// shifted earlier/later. Currently ~12% slower than the previous pass (0.91 -> 1.02),
+// nudged back after that pass read as slightly too fast — still well short of the
+// 1.175 pass before that, which had overshot the other way into feeling heavy.
 const RIGHT_LINE_STARTS_MS = [200, 500, 800, 1100];
 const RIGHT_LINE_DURATION_S = 1.0;
 const RIGHT_CHAR_STAGGER_S = 0.03;
-const RIGHT_SPEED_SCALE = 0.91;
+const RIGHT_SPEED_SCALE = 1.02;
 // Brief breathing room between the RIGHT block's last character landing and the LEFT
 // block's first cue — long enough to read as a beat, short enough to stay tight.
 const RIGHT_TO_LEFT_PAUSE_MS = 125;
