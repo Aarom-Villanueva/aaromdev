@@ -38,14 +38,18 @@ type VideoOptions = {
   posterAt?: number;
 };
 
-/** Optimized MP4 (f_auto picks AV1/VP9/H.265/H.264 per browser) plus a poster taken
- * from the first frame. `width` caps the delivered size without ever upscaling. */
+/** H.264 MP4 plus a poster frame. `width` caps the delivered size without upscaling.
+ *
+ * No f_auto on purpose: with f_auto Cloudinary serves a resized VP9/WebM to Chrome, and
+ * that encode showed coloured (magenta/green) lines along hard black-to-colour edges in
+ * the screen recordings. Plain H.264 is clean everywhere and is what Safari iOS plays
+ * best (same choice as the hero video). */
 export function cloudinaryVideo(url: string, { width = 1280, posterAt = 0 }: VideoOptions = {}): CloudinaryVideo {
   const { cloud, asset } = parseCloudinaryVideoUrl(url);
   const base = `${CLOUDINARY_HOST}/${cloud}/video/upload`;
 
   return {
-    src: `${base}/f_auto,q_auto,w_${width},c_limit/${asset}.mp4`,
+    src: `${base}/q_auto,w_${width},c_limit/${asset}.mp4`,
     poster: `${base}/so_${posterAt},f_auto,q_auto,w_${Math.min(width, 960)},c_limit/${asset}.jpg`,
   };
 }
