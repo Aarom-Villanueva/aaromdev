@@ -7,11 +7,12 @@ export type ProjectCategory = 'web' | 'tienda' | 'sistema';
 export type ProjectKind = 'cliente' | 'producto' | 'demo' | 'academico';
 
 export type ProjectMedia =
-  /** `framed`: the video already shows its own device/browser mockup, so the card
-   * drops its browser bar and shows it edge to edge. */
-  | { type: 'video'; src: string; poster: string; framed?: boolean }
+  | { type: 'video'; src: string; poster: string }
   /** Long full-page capture that scrolls by itself inside the frame. */
   | { type: 'scroll-image'; src: string; width: number; height: number };
+
+export type ProjectFeature = { title: string; description: string };
+export type ProjectStackItem = { name: string; purpose: string };
 
 export type Project = {
   slug: string;
@@ -22,9 +23,14 @@ export type Project = {
   category: ProjectCategory;
   kind: ProjectKind;
   media: ProjectMedia;
-  /** Live site. When present the card links to it. */
+  /** Live site. The detail page shows a "Ver en vivo" button when present. */
   url?: string;
+  /** Short tags (highlight card and fallback for the detail page when `stack` is empty). */
   technologies?: string[];
+  /** Detail page, "Qué hace". Only write what the project really does today. */
+  features?: ProjectFeature[];
+  /** Detail page, "Detalles técnicos": each technology and what it is used for. */
+  stack?: ProjectStackItem[];
   /** Full-width card at the top of the home section. Only one project should set it. */
   highlight?: boolean;
   /** Candidate for the home section, which shows the first four in array order
@@ -66,10 +72,32 @@ const allProjects: Project[] = [
       ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1793557480/aromacloud-video.mp4', {
         posterAt: 2,
       }),
-      framed: true,
     },
     url: 'https://aromacloud.app',
     technologies: ['Java 21', 'Spring Boot', 'Spring Security', 'JWT', 'PostgreSQL', 'Docker', 'Next.js', 'TypeScript', 'Tailwind CSS'],
+    // TODO: revisar con el código de AromaCloud y ampliar (catálogo público, superadmin, etc.).
+    features: [
+      {
+        title: 'Varias tiendas, una plataforma',
+        description: 'Cada perfumería trabaja con sus propios datos, separados del resto, sobre la misma aplicación.',
+      },
+      {
+        title: 'Panel de administración',
+        description: 'Productos, stock, clientes y pedidos de la tienda gestionados desde un solo lugar.',
+      },
+      {
+        title: 'Configuración y suscripciones',
+        description: 'Cada tienda ajusta su configuración y mantiene su plan de suscripción dentro de la plataforma.',
+      },
+    ],
+    stack: [
+      { name: 'Java 21 + Spring Boot', purpose: 'API y reglas de negocio de la plataforma.' },
+      { name: 'Spring Security + JWT', purpose: 'Inicio de sesión y permisos por rol.' },
+      { name: 'PostgreSQL', purpose: 'Base de datos de todas las tiendas, con los datos de cada una aislados.' },
+      { name: 'Next.js + TypeScript', purpose: 'Interfaz del panel y del catálogo.' },
+      { name: 'Tailwind CSS', purpose: 'Sistema visual de la interfaz.' },
+      { name: 'Docker', purpose: 'Empaquetado y despliegue de los servicios.' },
+    ],
     highlight: true,
     showOnHome: true,
   },
@@ -86,21 +114,43 @@ const allProjects: Project[] = [
       type: 'video',
       ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1789140873/ferramenta-home.mp4'),
     },
+    // TODO: agregar `url`, `features` y `stack` cuando revise el proyecto.
     showOnHome: true,
   },
   {
     slug: 'trama',
     name: 'TRAMA',
     tagline: 'Catálogo de ropa',
-    // TODO: confirmar este texto con lo que TRAMA tiene implementado hoy.
-    summary: 'Catálogo online para una marca de ropa, pensado para mostrar la colección y recibir pedidos.',
+    summary:
+      'Catálogo online para una marca de ropa: colecciones de mujer y hombre, ficha por prenda con tallas y pedido por WhatsApp.',
     category: 'tienda',
     kind: 'demo',
     media: {
       type: 'video',
       ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1793557443/trama-video.mp4'),
-      framed: true,
     },
+    url: 'https://trama-opal.vercel.app',
+    features: [
+      {
+        title: 'Colecciones de mujer y hombre',
+        description: 'La portada lleva directo a cada colección y destaca las prendas esenciales con su precio.',
+      },
+      {
+        title: 'Catálogo con filtros',
+        description: 'Las 12 prendas se filtran por colección, categoría, talla y precio, y se pueden ordenar.',
+      },
+      {
+        title: 'Ficha de cada prenda',
+        description: 'Fotos, descripción, color, selector de talla de XS a XL, guía de tallas y cantidad.',
+      },
+      {
+        title: 'Bolsa y pedido por WhatsApp',
+        description:
+          'El cliente arma su selección con subtotal y la envía como consulta por WhatsApp; disponibilidad y envío se confirman en la conversación.',
+      },
+    ],
+    // TODO: completar `stack` con el código de TRAMA.
+    technologies: ['Next.js'],
     showOnHome: true,
   },
   {
@@ -115,6 +165,7 @@ const allProjects: Project[] = [
       type: 'video',
       ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1789140959/vanta.mp4'),
     },
+    // TODO: agregar `url`, `features` y `stack` cuando revise el proyecto.
     showOnHome: true,
   },
   {
@@ -127,6 +178,7 @@ const allProjects: Project[] = [
     kind: 'demo',
     // TODO: reemplazar por el video de NARA cuando esté listo.
     media: { type: 'scroll-image', src: '/screenshots/nara.webp', width: 1200, height: 7144 },
+    // TODO: agregar `url`, `features` y `stack` cuando revise el proyecto.
     showOnHome: true,
   },
   {
@@ -144,12 +196,14 @@ const allProjects: Project[] = [
     },
     showOnHome: true,
     technologies: ['C#', 'ASP.NET', 'SQL Server', 'Entity Framework', 'Bootstrap 5'],
+    // TODO: revisar con el código de Kawsay y completar `features` y `stack`.
   },
 ];
 
 export const projects = allProjects.filter((project) => !project.hidden);
 
 export const highlightProject = projects.find((project) => project.highlight);
+
 export const HOME_PROJECT_LIMIT = 4;
 export const homeProjects = projects
   .filter((project) => project.showOnHome && !project.highlight)
@@ -161,4 +215,14 @@ export function projectsByCategory(category: ProjectCategory | null): Project[] 
 
 export function isProjectCategory(value: string | null | undefined): value is ProjectCategory {
   return value === 'web' || value === 'tienda' || value === 'sistema';
+}
+
+export function getProject(slug: string): Project | undefined {
+  return projects.find((project) => project.slug === slug);
+}
+
+/** Next project in list order (wraps around), for the "Siguiente proyecto" link. */
+export function nextProject(slug: string): Project {
+  const index = projects.findIndex((project) => project.slug === slug);
+  return projects[(index + 1) % projects.length];
 }

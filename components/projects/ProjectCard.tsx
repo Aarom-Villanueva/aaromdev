@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import ProjectMedia from '@/components/projects/ProjectMedia';
 import { kindLabels } from '@/data/projects';
@@ -11,60 +12,54 @@ function hostOf(project: Project) {
   return project.url ? new URL(project.url).host : project.slug;
 }
 
-function BrowserFrame({
+export function projectHref(project: Project) {
+  return `/proyectos/${project.slug}`;
+}
+
+/** Browser-window frame around a project's video or capture. Used by the cards and the detail page. */
+export function BrowserFrame({
   project,
   className = '',
   aspect = 'aspect-video',
+  fade = true,
 }: {
   project: Project;
   className?: string;
   aspect?: string;
+  fade?: boolean;
 }) {
-  const selfFramed = project.media.type === 'video' && project.media.framed;
-
-  const media = <ProjectMedia media={project.media} alt={`${project.name} — vista del proyecto`} />;
-
   return (
-    <div className={`relative flex flex-col overflow-hidden bg-[#0D0F13] ${className}`}>
-      {selfFramed ? (
-        // Same height as the browser bar, so cards with and without it line up in the grid.
-        <div aria-hidden="true" className="h-10 shrink-0" />
-      ) : (
-        <div className="flex h-10 shrink-0 items-center gap-2 border-b border-white/[0.05] bg-white/[0.02] px-4">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
-          <span className="ml-3 truncate font-mono text-[10px] text-white/30">{hostOf(project)}</span>
-        </div>
-      )}
+    <div className={`flex flex-col overflow-hidden bg-[#0D0F13] ${className}`}>
+      <div className="flex h-10 shrink-0 items-center gap-2 border-b border-white/[0.05] bg-white/[0.02] px-4">
+        <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
+        <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
+        <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
+        <span className="ml-3 truncate font-mono text-[10px] text-white/30">{hostOf(project)}</span>
+      </div>
       {/* overflow-hidden is required: without it an aspect-ratio box grows to fit tall content. */}
-      <div className={`relative w-full overflow-hidden ${aspect}`}>{selfFramed ? null : media}</div>
-      {/* A self-framed video brings its own mockup, so it fills the bar area too. */}
-      {selfFramed ? <div className="absolute inset-0">{media}</div> : null}
+      <div className={`relative w-full overflow-hidden ${aspect}`}>
+        <ProjectMedia media={project.media} alt={`${project.name} — vista del proyecto`} fade={fade} />
+      </div>
     </div>
   );
 }
 
-function KindTag({ project }: { project: Project }) {
+export function KindTag({ project }: { project: Project }) {
   return (
     <span className={`tag-tech ${project.kind === 'cliente' ? 'tag-tech-blue' : ''}`}>{kindLabels[project.kind]}</span>
   );
 }
 
+/** Project name as a stretched link: the whole card opens the detail page without nesting links. */
 function ProjectName({ project, className }: { project: Project; className: string }) {
-  if (!project.url) return <h3 className={className}>{project.name}</h3>;
-
   return (
     <h3 className={className}>
-      <a
-        href={project.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        // Stretched link: the whole card is clickable without nesting interactive elements.
+      <Link
+        href={projectHref(project)}
         className="after:absolute after:inset-0 after:z-[1] after:content-[''] focus-visible:outline-none"
       >
         {project.name}
-      </a>
+      </Link>
     </h3>
   );
 }
@@ -84,7 +79,7 @@ export function HighlightProjectCard({ project }: { project: Project }) {
           <p className="mb-8 max-w-md text-sm leading-relaxed text-white/45">{project.summary}</p>
 
           {project.technologies?.length ? (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="mb-8 flex flex-wrap gap-1.5">
               {project.technologies.map((technology) => (
                 <span
                   key={technology}
@@ -97,6 +92,11 @@ export function HighlightProjectCard({ project }: { project: Project }) {
               ))}
             </div>
           ) : null}
+
+          <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-white/50 transition-colors group-hover:text-white">
+            Ver proyecto
+            <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </span>
         </div>
 
         <div className="lg:col-span-7">
@@ -129,9 +129,10 @@ export default function ProjectCard({ project, index }: { project: Project; inde
         <p className="text-sm leading-relaxed text-white/45">{project.summary}</p>
         <div className="mt-auto flex items-center justify-between pt-6">
           <KindTag project={project} />
-          {project.url ? (
-            <ArrowUpRight className="h-4 w-4 text-white/30 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white/70" />
-          ) : null}
+          <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-white/35 transition-colors group-hover:text-white/80">
+            Ver proyecto
+            <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </span>
         </div>
       </div>
 

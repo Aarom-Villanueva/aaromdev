@@ -7,7 +7,7 @@ import { useIsInViewport } from '@/hooks/useIsInViewport';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import type { ProjectMedia as ProjectMediaData } from '@/data/projects';
 
-function ShowcaseVideo({
+export function ShowcaseVideo({
   src,
   poster,
   alt,
@@ -104,14 +104,22 @@ function ShowcaseVideo({
 
 /** One component for every project visual: a looping video (mounted only once the card
  * gets close to the viewport, poster until then) or a long capture that scrolls itself. */
-export default function ProjectMedia({ media, alt }: { media: ProjectMediaData; alt: string }) {
+export default function ProjectMedia({
+  media,
+  alt,
+  fade = true,
+}: {
+  media: ProjectMediaData;
+  alt: string;
+  /** Bottom gradient that blends the media into the card. */
+  fade?: boolean;
+}) {
   const prefersReducedMotion = usePrefersReducedMotion();
   // Mount early (before the card is fully visible) so fast scrolling never shows an
   // empty frame; play only while a meaningful part of the card is on screen.
   const { ref: nearRef, isInView: isNear } = useIsInViewport<HTMLDivElement>({ once: true, margin: '400px 0px' });
   const { ref: visibleRef, isInView: isVisible } = useIsInViewport<HTMLDivElement>({ amount: 0.25 });
-  // Screen recordings read from the top; self-framed videos are centred compositions.
-  const fit = media.type === 'video' && media.framed ? 'object-cover object-center' : 'object-cover object-top';
+  const fit = 'object-cover object-top';
 
   return (
     <div ref={nearRef} className="relative h-full w-full">
@@ -131,9 +139,9 @@ export default function ProjectMedia({ media, alt }: { media: ProjectMediaData; 
         ) : (
           <AutoScrollImage src={media.src} alt={alt} width={media.width} height={media.height} />
         )}
-        {media.type === 'video' && media.framed ? null : (
+        {fade ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D0F13] to-transparent" />
-        )}
+        ) : null}
       </div>
     </div>
   );
