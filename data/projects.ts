@@ -109,10 +109,9 @@ const allProjects: Project[] = [
       'E-commerce de generadores, ventiladores y herramientas industriales, con catálogo, fichas técnicas y contacto integrado.',
     category: 'tienda',
     kind: 'cliente',
-    // TODO: reemplazar por el video único del recorrido completo.
     media: {
       type: 'video',
-      ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1789140873/ferramenta-home.mp4'),
+      ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1793565635/ferramenta-video.mp4'),
     },
     // TODO: agregar `url`, `features` y `stack` cuando revise el proyecto.
     showOnHome: true,
