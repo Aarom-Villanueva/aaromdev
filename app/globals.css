@@ -381,3 +381,20 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Promo strip: two identical copies scroll left; at -50% the second copy sits exactly
+   where the first started, so the loop is seamless. */
+.promo-marquee-track {
+  width: max-content;
+  animation: promoMarquee 45s linear infinite;
+}
+
+.promo-marquee:hover .promo-marquee-track,
+.promo-marquee:focus-visible .promo-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes promoMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
