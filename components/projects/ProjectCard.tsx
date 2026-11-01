@@ -21,11 +21,14 @@ export function BrowserFrame({
   project,
   className = '',
   aspect = 'aspect-video',
+  ratio,
   fade = true,
 }: {
   project: Project;
   className?: string;
   aspect?: string;
+  /** Exact width/height ratio; overrides `aspect` (used by the detail page). */
+  ratio?: number;
   fade?: boolean;
 }) {
   return (
@@ -37,7 +40,10 @@ export function BrowserFrame({
         <span className="ml-3 truncate font-mono text-[10px] text-white/30">{hostOf(project)}</span>
       </div>
       {/* overflow-hidden is required: without it an aspect-ratio box grows to fit tall content. */}
-      <div className={`relative w-full overflow-hidden ${aspect}`}>
+      <div
+        className={`relative w-full overflow-hidden ${ratio ? '' : aspect}`}
+        style={ratio ? { aspectRatio: ratio } : undefined}
+      >
         <ProjectMedia media={project.media} alt={`${project.name} — vista del proyecto`} fade={fade} />
       </div>
     </div>

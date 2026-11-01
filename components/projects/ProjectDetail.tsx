@@ -36,25 +36,27 @@ function Hero({ project, whatsappUrl }: { project: Project; whatsappUrl: string 
           </Link>
         </Reveal>
 
-        <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
-          <div className="lg:col-span-7">
-            <Reveal delay={0.05}>
-              <div className="mb-6 flex flex-wrap gap-2">
-                <KindTag project={project} />
-                <span className="tag-tech">{categoryLabels[project.category]}</span>
-              </div>
-            </Reveal>
-            <Reveal delay={0.1}>
-              <h1 className="text-display mb-5 text-white">{project.name}</h1>
-            </Reveal>
+        <Reveal delay={0.05}>
+          <div className="mb-6 flex flex-wrap gap-2">
+            <KindTag project={project} />
+            <span className="tag-tech">{categoryLabels[project.category]}</span>
+          </div>
+        </Reveal>
+        {/* Name on its own row so long names never run into the summary column. */}
+        <Reveal delay={0.1}>
+          <h1 className="text-display mb-8 break-words text-white lg:mb-10">{project.name}</h1>
+        </Reveal>
+
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-start lg:gap-10">
+          <div className="lg:col-span-6">
             <Reveal delay={0.15}>
-              <p className="text-body-large max-w-2xl text-white/70">{project.tagline}</p>
+              <p className="text-body-large max-w-xl text-white/70">{project.tagline}</p>
             </Reveal>
           </div>
 
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-6">
             <Reveal delay={0.2}>
-              <p className="mb-8 text-[15px] leading-relaxed text-white/55">{project.summary}</p>
+              <p className="mb-8 max-w-xl text-[15px] leading-relaxed text-white/55">{project.summary}</p>
             </Reveal>
             <Reveal delay={0.25}>
               <div className="flex flex-wrap gap-3">
@@ -81,6 +83,7 @@ function Hero({ project, whatsappUrl }: { project: Project; whatsappUrl: string 
         <Reveal delay={0.3}>
           <BrowserFrame
             project={project}
+            ratio={project.media.type === 'video' ? project.media.aspectRatio : undefined}
             fade={false}
             className="mt-14 rounded-2xl border border-white/10 shadow-[0_30px_120px_-30px_rgba(120,157,255,0.25)] lg:mt-20"
           />

@@ -119,23 +119,27 @@ export default function ProjectMedia({
   // empty frame; play only while a meaningful part of the card is on screen.
   const { ref: nearRef, isInView: isNear } = useIsInViewport<HTMLDivElement>({ once: true, margin: '400px 0px' });
   const { ref: visibleRef, isInView: isVisible } = useIsInViewport<HTMLDivElement>({ amount: 0.25 });
-  const fit = 'object-cover object-top';
+  // Videos are always shown whole (never cropped at the sides); long captures scroll.
+  const fit = 'object-contain object-center';
+  const inset = media.type === 'video' && media.inset ? `${media.inset * 100}%` : undefined;
 
   return (
     <div ref={nearRef} className="relative h-full w-full">
       <div ref={visibleRef} className="relative h-full w-full overflow-hidden bg-[#0D0F13]">
         {media.type === 'video' ? (
-          isNear ? (
-            <ShowcaseVideo
-              src={media.src}
-              poster={media.poster}
-              alt={alt}
-              shouldPlay={isVisible && !prefersReducedMotion}
-              fit={fit}
-            />
-          ) : (
-            <img src={media.poster} alt={alt} loading="lazy" className={`h-full w-full ${fit}`} />
-          )
+          <div className="h-full w-full" style={inset ? { padding: inset } : undefined}>
+            {isNear ? (
+              <ShowcaseVideo
+                src={media.src}
+                poster={media.poster}
+                alt={alt}
+                shouldPlay={isVisible && !prefersReducedMotion}
+                fit={fit}
+              />
+            ) : (
+              <img src={media.poster} alt={alt} loading="lazy" className={`h-full w-full ${fit}`} />
+            )}
+          </div>
         ) : (
           <AutoScrollImage src={media.src} alt={alt} width={media.width} height={media.height} />
         )}

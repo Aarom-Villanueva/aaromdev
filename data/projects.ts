@@ -7,7 +7,16 @@ export type ProjectCategory = 'web' | 'tienda' | 'sistema';
 export type ProjectKind = 'cliente' | 'producto' | 'demo' | 'academico';
 
 export type ProjectMedia =
-  | { type: 'video'; src: string; poster: string }
+  | {
+      type: 'video';
+      src: string;
+      poster: string;
+      /** Width / height of the recording. The detail page sizes its frame to it so
+       * nothing is cut or letterboxed; cards keep a uniform 16:9 and show it whole. */
+      aspectRatio?: number;
+      /** Zoom out: empty margin around the video, as a fraction of the width (0.05 = 5%). */
+      inset?: number;
+    }
   /** Long full-page capture that scrolls by itself inside the frame. */
   | { type: 'scroll-image'; src: string; width: number; height: number };
 
@@ -103,7 +112,7 @@ const allProjects: Project[] = [
   },
   {
     slug: 'ferramenta',
-    name: 'Ferramenta.pe',
+    name: 'Ferramenta',
     tagline: 'Tienda de herramientas y equipos',
     summary:
       'E-commerce de generadores, ventiladores y herramientas industriales, con catálogo, fichas técnicas y contacto integrado.',
@@ -112,6 +121,7 @@ const allProjects: Project[] = [
     media: {
       type: 'video',
       ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1793565635/ferramenta-video.mp4'),
+      aspectRatio: 1920 / 904,
     },
     // TODO: agregar `url`, `features` y `stack` cuando revise el proyecto.
     showOnHome: true,
@@ -127,6 +137,7 @@ const allProjects: Project[] = [
     media: {
       type: 'video',
       ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1793557443/trama-video.mp4'),
+      inset: 0.05,
     },
     url: 'https://trama-opal.vercel.app',
     features: [
