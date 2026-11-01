@@ -12,11 +12,13 @@ function ShowcaseVideo({
   poster,
   alt,
   shouldPlay,
+  fit,
 }: {
   src: string;
   poster: string;
   alt: string;
   shouldPlay: boolean;
+  fit: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [failed, setFailed] = useState(false);
@@ -64,7 +66,7 @@ function ShowcaseVideo({
   };
 
   if (failed) {
-    return <img src={poster} alt={alt} className="h-full w-full object-cover object-top" />;
+    return <img src={poster} alt={alt} className={`h-full w-full ${fit}`} />;
   }
 
   return (
@@ -82,7 +84,7 @@ function ShowcaseVideo({
           console.warn('[ProjectMedia] error al cargar el video', { src, code: videoRef.current?.error?.code });
           setFailed(true);
         }}
-        className="h-full w-full object-cover object-top"
+        className={`h-full w-full ${fit}`}
       />
       {needsManualPlay ? (
         <button
@@ -108,6 +110,8 @@ export default function ProjectMedia({ media, alt }: { media: ProjectMediaData; 
   // empty frame; play only while a meaningful part of the card is on screen.
   const { ref: nearRef, isInView: isNear } = useIsInViewport<HTMLDivElement>({ once: true, margin: '400px 0px' });
   const { ref: visibleRef, isInView: isVisible } = useIsInViewport<HTMLDivElement>({ amount: 0.25 });
+  // Screen recordings read from the top; self-framed videos are centred compositions.
+  const fit = media.type === 'video' && media.framed ? 'object-cover object-center' : 'object-cover object-top';
 
   return (
     <div ref={nearRef} className="relative h-full w-full">
@@ -119,14 +123,17 @@ export default function ProjectMedia({ media, alt }: { media: ProjectMediaData; 
               poster={media.poster}
               alt={alt}
               shouldPlay={isVisible && !prefersReducedMotion}
+              fit={fit}
             />
           ) : (
-            <img src={media.poster} alt={alt} loading="lazy" className="h-full w-full object-cover object-top" />
+            <img src={media.poster} alt={alt} loading="lazy" className={`h-full w-full ${fit}`} />
           )
         ) : (
           <AutoScrollImage src={media.src} alt={alt} width={media.width} height={media.height} />
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D0F13] to-transparent" />
+        {media.type === 'video' && media.framed ? null : (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0D0F13] to-transparent" />
+        )}
       </div>
     </div>
   );

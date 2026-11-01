@@ -31,14 +31,31 @@ function parseCloudinaryVideoUrl(url: string): CloudinaryParts {
 
 export type CloudinaryVideo = { src: string; poster: string };
 
+type VideoOptions = {
+  /** Max delivered width; never upscales. */
+  width?: number;
+  /** Second used for the poster. Use it when the video opens on a fade from black. */
+  posterAt?: number;
+};
+
 /** Optimized MP4 (f_auto picks AV1/VP9/H.265/H.264 per browser) plus a poster taken
  * from the first frame. `width` caps the delivered size without ever upscaling. */
-export function cloudinaryVideo(url: string, { width = 1280 }: { width?: number } = {}): CloudinaryVideo {
+export function cloudinaryVideo(url: string, { width = 1280, posterAt = 0 }: VideoOptions = {}): CloudinaryVideo {
   const { cloud, asset } = parseCloudinaryVideoUrl(url);
   const base = `${CLOUDINARY_HOST}/${cloud}/video/upload`;
 
   return {
     src: `${base}/f_auto,q_auto,w_${width},c_limit/${asset}.mp4`,
-    poster: `${base}/so_0,f_auto,q_auto,w_${Math.min(width, 960)},c_limit/${asset}.jpg`,
+    poster: `${base}/so_${posterAt},f_auto,q_auto,w_${Math.min(width, 960)},c_limit/${asset}.jpg`,
   };
+}
+
+/** Optimized still image (format and quality chosen per browser), capped at `width`. */
+export function cloudinaryImage(url: string, { width = 1200 }: { width?: number } = {}): string {
+  const match = url.match(/res\.cloudinary\.com\/([^/]+)\/image\/upload\/(?:.*?\/)?(v\d+\/.+)$/);
+  if (!match) {
+    throw new Error(`[cloudinary] URL de imagen no válida: ${url}`);
+  }
+  const [, cloud, asset] = match;
+  return `${CLOUDINARY_HOST}/${cloud}/image/upload/f_auto,q_auto,w_${width},c_limit/${asset}`;
 }

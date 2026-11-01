@@ -20,18 +20,27 @@ function BrowserFrame({
   className?: string;
   aspect?: string;
 }) {
+  const selfFramed = project.media.type === 'video' && project.media.framed;
+
+  const media = <ProjectMedia media={project.media} alt={`${project.name} — vista del proyecto`} />;
+
   return (
-    <div className={`flex flex-col overflow-hidden bg-[#0D0F13] ${className}`}>
-      <div className="flex shrink-0 items-center gap-2 border-b border-white/[0.05] bg-white/[0.02] px-4 py-3">
-        <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
-        <span className="ml-3 truncate font-mono text-[10px] text-white/30">{hostOf(project)}</span>
-      </div>
+    <div className={`relative flex flex-col overflow-hidden bg-[#0D0F13] ${className}`}>
+      {selfFramed ? (
+        // Same height as the browser bar, so cards with and without it line up in the grid.
+        <div aria-hidden="true" className="h-10 shrink-0" />
+      ) : (
+        <div className="flex h-10 shrink-0 items-center gap-2 border-b border-white/[0.05] bg-white/[0.02] px-4">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#FF5F57]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
+          <span className="ml-3 truncate font-mono text-[10px] text-white/30">{hostOf(project)}</span>
+        </div>
+      )}
       {/* overflow-hidden is required: without it an aspect-ratio box grows to fit tall content. */}
-      <div className={`relative w-full overflow-hidden ${aspect}`}>
-        <ProjectMedia media={project.media} alt={`${project.name} — vista del proyecto`} />
-      </div>
+      <div className={`relative w-full overflow-hidden ${aspect}`}>{selfFramed ? null : media}</div>
+      {/* A self-framed video brings its own mockup, so it fills the bar area too. */}
+      {selfFramed ? <div className="absolute inset-0">{media}</div> : null}
     </div>
   );
 }

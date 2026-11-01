@@ -7,7 +7,9 @@ export type ProjectCategory = 'web' | 'tienda' | 'sistema';
 export type ProjectKind = 'cliente' | 'producto' | 'demo' | 'academico';
 
 export type ProjectMedia =
-  | { type: 'video'; src: string; poster: string }
+  /** `framed`: the video already shows its own device/browser mockup, so the card
+   * drops its browser bar and shows it edge to edge. */
+  | { type: 'video'; src: string; poster: string; framed?: boolean }
   /** Long full-page capture that scrolls by itself inside the frame. */
   | { type: 'scroll-image'; src: string; width: number; height: number };
 
@@ -59,8 +61,13 @@ const allProjects: Project[] = [
       'Plataforma multi-tenant para que perfumerías administren productos, stock, clientes, pedidos y suscripciones desde un mismo panel.',
     category: 'sistema',
     kind: 'producto',
-    // TODO: reemplazar por el video de AromaCloud cuando esté en Cloudinary.
-    media: { type: 'scroll-image', src: '/screenshots/aromacloud.webp', width: 1200, height: 4619 },
+    media: {
+      type: 'video',
+      ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1793557480/aromacloud-video.mp4', {
+        posterAt: 2,
+      }),
+      framed: true,
+    },
     url: 'https://aromacloud.app',
     technologies: ['Java 21', 'Spring Boot', 'Spring Security', 'JWT', 'PostgreSQL', 'Docker', 'Next.js', 'TypeScript', 'Tailwind CSS'],
     highlight: true,
@@ -89,10 +96,12 @@ const allProjects: Project[] = [
     summary: 'Catálogo online para una marca de ropa, pensado para mostrar la colección y recibir pedidos.',
     category: 'tienda',
     kind: 'demo',
-    // TODO: pegar el link del video de TRAMA y quitar `hidden`.
-    media: { type: 'scroll-image', src: '/screenshots/aromacloud.webp', width: 1200, height: 4619 },
+    media: {
+      type: 'video',
+      ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1793557443/trama-video.mp4'),
+      framed: true,
+    },
     showOnHome: true,
-    hidden: true,
   },
   {
     slug: 'vanta-01',
