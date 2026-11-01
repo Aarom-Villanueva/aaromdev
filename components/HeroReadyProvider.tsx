@@ -24,6 +24,10 @@ type HeroReadyContextValue = {
   /** One-way handoff: preloader -> navbar. Called from the floating logo's
    * onAnimationComplete, never from a timer. */
   claimNavbarBrand: () => void;
+  /** Flips once, when the hero video reaches the end of its first play-through (it loops,
+   * so this is detected from timeupdate, not the `ended` event). PromoBar waits for it. */
+  heroLoopDone: boolean;
+  markHeroLoopDone: () => void;
 };
 
 const HeroReadyContext = createContext<HeroReadyContextValue | null>(null);
@@ -33,6 +37,8 @@ export function HeroReadyProvider({ children }: { children: ReactNode }) {
   const [preloaderDone, setPreloaderDone] = useState(false);
   const [heroRevealStarted, setHeroRevealStarted] = useState(false);
   const [brandOwner, setBrandOwner] = useState<BrandOwner>('preloader');
+  const [heroLoopDone, setHeroLoopDone] = useState(false);
+  const markHeroLoopDone = useCallback(() => setHeroLoopDone(true), []);
   const markHeroReady = useCallback(() => setHeroReady(true), []);
   const markPreloaderDone = useCallback(() => setPreloaderDone(true), []);
   const markHeroRevealStarted = useCallback(() => setHeroRevealStarted(true), []);
@@ -49,6 +55,8 @@ export function HeroReadyProvider({ children }: { children: ReactNode }) {
         markHeroRevealStarted,
         brandOwner,
         claimNavbarBrand,
+        heroLoopDone,
+        markHeroLoopDone,
       }}
     >
       {children}

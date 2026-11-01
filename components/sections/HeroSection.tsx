@@ -97,7 +97,7 @@ export default function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [scope, animate] = useAnimate();
-  const { markHeroReady, heroRevealStarted, preloaderDone } = useHeroReady();
+  const { markHeroReady, heroRevealStarted, preloaderDone, markHeroLoopDone } = useHeroReady();
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const rightAnimatedRef = useRef(false);
@@ -136,6 +136,31 @@ export default function HeroSection() {
   }, []);
 
   // Dev-only diagnostic (stripped from production by the NODE_ENV check inside logDev).
+  // Signals the end of the video's first play-through (for PromoBar). The element loops,
+  // so `ended` never fires: detect the wrap-around, or reaching the last 300 ms.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    let lastTime = 0;
+    let signalled = false;
+    const finish = () => {
+      if (signalled) return;
+      signalled = true;
+      markHeroLoopDone();
+    };
+    const onTimeUpdate = () => {
+      const time = video.currentTime;
+      if (time + 0.25 < lastTime || (video.duration > 0 && time >= video.duration - 0.3)) finish();
+      lastTime = time;
+    };
+    video.addEventListener('timeupdate', onTimeUpdate);
+    video.addEventListener('ended', finish);
+    return () => {
+      video.removeEventListener('timeupdate', onTimeUpdate);
+      video.removeEventListener('ended', finish);
+    };
+  }, [markHeroLoopDone]);
+
   useEffect(() => {
     logDev('prefers-reduced-motion', { prefersReducedMotion });
   }, [prefersReducedMotion]);
@@ -579,7 +604,7 @@ export default function HeroSection() {
                   >
                     {Array.from(line.text).map((ch, ci) => (
                       <span key={ci} data-right-char className="inline-block opacity-0">
-                        {ch === ' ' ? ' ' : ch}
+                        {ch === ' ' ? '\u00A0' : ch}
                       </span>
                     ))}
                   </div>
