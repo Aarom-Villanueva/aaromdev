@@ -82,7 +82,6 @@ const allProjects: Project[] = [
         posterAt: 2,
       }),
     },
-    url: 'https://aromacloud.app',
     technologies: ['Java 21', 'Spring Boot', 'Spring Security', 'JWT', 'PostgreSQL', 'Docker', 'Next.js', 'TypeScript', 'Tailwind CSS'],
     // TODO: revisar con el código de AromaCloud y ampliar (catálogo público, superadmin, etc.).
     features: [
@@ -123,7 +122,8 @@ const allProjects: Project[] = [
       ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1793565635/ferramenta-video.mp4'),
       aspectRatio: 1920 / 904,
     },
-    // TODO: agregar `url`, `features` y `stack` cuando revise el proyecto.
+    url: 'https://ferramenta.pe',
+    // TODO: agregar `features` y `stack` cuando revise el proyecto.
     showOnHome: true,
   },
   {
