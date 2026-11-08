@@ -47,6 +47,7 @@ export const services: Service[] = [
     price: 1800,
     priceSupport: 'Tienda básica con alcance definido',
     idealFor: 'Negocios con muchos productos que quieren recibir pedidos en línea.',
+    delivery: 'Entrega en 10 a 15 días hábiles',
     ctaLabel: 'Cotizar mi tienda',
     whatsappSubject: 'cotizar mi tienda online',
     includes: [
@@ -66,6 +67,7 @@ export const services: Service[] = [
     price: 2500,
     priceSupport: 'Versión inicial para un proceso concreto',
     idealFor: 'Negocios que hoy llevan pedidos, citas o inventario en cuadernos o Excel.',
+    delivery: 'Entrega en 15 a 20 días hábiles',
     ctaLabel: 'Hablemos de mi sistema',
     whatsappSubject: 'hablar sobre un sistema para mi negocio',
     includes: ['Análisis de tus necesidades', 'Alcance y funciones definidos en la propuesta', 'Panel pensado para tu equipo'],
