@@ -192,6 +192,77 @@ const allProjects: Project[] = [
     showOnHome: true,
   },
   {
+    slug: 'casa-criolla',
+    name: 'Casa Criolla',
+    tagline: 'Landing de restaurante',
+    summary:
+      'Landing para un restaurante de cocina peruana: platos destacados con foto, carta con precios, ubicación con horarios y reservas por WhatsApp.',
+    category: 'web',
+    kind: 'demo',
+    // TODO: reemplazar por un video cuando esté en Cloudinary y agregar `url` (Vercel).
+    media: { type: 'scroll-image', src: '/screenshots/casa-criolla.webp', width: 1200, height: 7171 },
+    features: [
+      {
+        title: 'Portada que abre el apetito',
+        description: 'Foto del salón a pantalla completa, la propuesta del restaurante en una línea y acceso directo a reservar.',
+      },
+      {
+        title: 'Los favoritos de la casa',
+        description: 'Ocho platos destacados con foto y precio en soles, para decidir antes de llegar.',
+      },
+      {
+        title: 'Carta organizada por categorías',
+        description: 'Un resumen de la carta con precios, armado desde una sola lista de platos fácil de actualizar.',
+      },
+      {
+        title: 'Reservas y visita',
+        description:
+          'Dirección, horarios y botones que abren WhatsApp con el mensaje listo para reservar o pedir la carta completa.',
+      },
+    ],
+    stack: [
+      { name: 'Next.js 16 + React 19', purpose: 'Página rápida, generada como contenido estático.' },
+      { name: 'TypeScript', purpose: 'Datos del restaurante, carta y horarios tipados en un solo lugar.' },
+      { name: 'Tailwind CSS 4', purpose: 'Sistema visual con tokens de color, tipografía y espaciado.' },
+      { name: 'next/image + next/font', purpose: 'Fotos optimizadas y tipografías Bodoni Moda y Jost servidas desde el propio sitio.' },
+    ],
+  },
+  {
+    slug: 'coffee',
+    name: 'Coffee',
+    tagline: 'Landing de cafetería',
+    summary:
+      'Landing editorial en inglés para una cafetería de especialidad: portada cinematográfica, cafés de temporada, menú, galería, ubicación y reservas.',
+    category: 'web',
+    kind: 'demo',
+    // TODO: reemplazar por un video cuando esté en Cloudinary y agregar `url` (Vercel).
+    media: { type: 'scroll-image', src: '/screenshots/coffee.webp', width: 1200, height: 7618 },
+    features: [
+      {
+        title: 'Portada cinematográfica',
+        description: 'El titular aparece por partes y la foto se acomoda con un efecto de profundidad al hacer scroll.',
+      },
+      {
+        title: 'Cafés de temporada',
+        description: 'Tres cafés destacados con origen, notas y precio; en escritorio la foto cambia al pasar sobre cada uno.',
+      },
+      {
+        title: 'Menú, galería y ubicación',
+        description: 'Carta completa, galería de fotos, dirección y horarios de atención en una sola página.',
+      },
+      {
+        title: 'Hecha para cualquier pantalla',
+        description: 'Menú a pantalla completa en celular y animaciones que se desactivan si el visitante prefiere menos movimiento.',
+      },
+    ],
+    stack: [
+      { name: 'Next.js 16 + React 19', purpose: 'Componentes de servidor por defecto; solo lo interactivo corre en el navegador.' },
+      { name: 'TypeScript (strict)', purpose: 'Contenido del menú, cafés y negocio en archivos de datos tipados.' },
+      { name: 'Tailwind CSS 4', purpose: 'Diseño editorial con tokens definidos en CSS.' },
+      { name: 'APIs nativas del navegador', purpose: 'Animaciones con un solo listener de scroll e IntersectionObserver, sin librerías extra.' },
+    ],
+  },
+  {
     slug: 'kawsay',
     name: 'Kawsay',
     tagline: 'Gestión operativa B2B',

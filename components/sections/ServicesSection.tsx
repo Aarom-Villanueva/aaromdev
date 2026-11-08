@@ -3,7 +3,7 @@
 import { Reveal, StaggerReveal, fadeUp } from '@/components/motion/Reveal';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, Check, LayoutGrid, Monitor, Store } from 'lucide-react';
+import { ArrowRight, Check, Clock, LayoutGrid, Monitor, Store } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { WhatsAppIcon } from '@/components/social/SocialLinks';
 import { buildWhatsAppUrl } from '@/data/contact';
@@ -50,6 +50,12 @@ function PriceBlock({ service, promoPrice }: { service: Service; promoPrice: num
         </span>
       </div>
       <span className="text-xs text-white/45">{service.priceSupport}</span>
+      {service.delivery ? (
+        <span className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 px-2.5 py-1 text-[11px] text-white/55">
+          <Clock className="h-3.5 w-3.5 text-[#789DFF]" aria-hidden="true" />
+          {service.delivery}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -85,7 +91,13 @@ function ServiceCard({ service, promo }: { service: Service; promo: ActivePromo 
         </AnimatePresence>
       </div>
       <h3 className="text-lg font-semibold text-white/90">{service.name}</h3>
-      <p className="text-sm leading-relaxed text-white/55">{service.description}</p>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm leading-relaxed text-white/55">{service.description}</p>
+        <p className="text-[12px] leading-relaxed text-white/40">
+          <span className="font-medium text-white/60">Ideal para: </span>
+          {service.idealFor}
+        </p>
+      </div>
       <PriceBlock service={service} promoPrice={promoPrice} />
       <div className="flex flex-col gap-3">
         <a
@@ -148,7 +160,8 @@ export default function ServicesSection() {
         <Reveal delay={0.15}>
           <p className="mt-10 text-center text-xs leading-relaxed text-white/35">
             {promo ? `Precios promocionales válidos hasta el ${promo.endsLabel}. ` : null}Precios iniciales por proyecto. El presupuesto final depende del alcance y las integraciones. Dominio,
-            hosting, licencias y mantenimiento se cotizan por separado.
+            hosting, licencias y mantenimiento se cotizan por separado. Pago: 50% para empezar y 50% al aprobar la
+            entrega.
           </p>
         </Reveal>
       </div>
