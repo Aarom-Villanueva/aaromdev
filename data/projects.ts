@@ -11,6 +11,8 @@ export type ProjectMedia =
       type: 'video';
       src: string;
       poster: string;
+      /** Low-res copy used as the moving, blurred background of the detail page. */
+      ambient?: string;
       /** Width / height of the recording. The detail page sizes its frame to it so
        * nothing is cut or letterboxed; cards keep a uniform 16:9 and show it whole. */
       aspectRatio?: number;
@@ -383,6 +385,68 @@ const allProjects: Project[] = [
         name: 'Control de versiones por registro',
         purpose: 'Detectará ediciones simultáneas y devolverá un conflicto en vez de sobrescribir en silencio.',
       },
+    ],
+  },
+  {
+    slug: 'nexovet',
+    name: 'NexoVet',
+    tagline: 'Gestión para veterinarias',
+    summary:
+      'Plataforma para centralizar la gestión de una veterinaria con pet shop: clientes, mascotas, citas, seguimiento, inventario y ventas.',
+    category: 'sistema',
+    kind: 'demo',
+    inDevelopment: true,
+    media: {
+      type: 'video',
+      ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1794326486/nexovet-corto.mp4', {
+        posterAt: 5,
+      }),
+    },
+    statusNote:
+      'Demo interactiva en desarrollo: la interfaz se puede recorrer y la base de datos ya está diseñada con datos de prueba. Falta el backend, el inicio de sesión y la conexión con la base de datos.',
+    features: [
+      {
+        title: 'Agenda de citas',
+        description: 'Citas organizadas por profesional, con el resumen del día de ventas, cobros y citas.',
+      },
+      {
+        title: 'Clientes y mascotas',
+        description: 'Registro de cada cliente y sus mascotas, con el historial de atención.',
+      },
+      {
+        title: 'Controles y vacunas',
+        description: 'Seguimiento de controles y de las próximas vacunas de cada mascota.',
+      },
+      {
+        title: 'Inventario del pet shop',
+        description: 'Movimientos, lotes y alertas cuando un producto se está acabando.',
+      },
+      {
+        title: 'Ventas y pagos parciales',
+        description: 'Venta de productos y servicios, con pagos a cuenta.',
+      },
+      {
+        title: 'Panel con indicadores',
+        description: 'Indicadores del negocio para la administración.',
+      },
+      {
+        title: 'Acceso por rol',
+        description: 'Accesos separados para administración, recepción y veterinarios.',
+        planned: true,
+      },
+    ],
+    stack: [
+      { name: 'HTML, CSS y JavaScript', purpose: 'Prototipo navegable de la interfaz.' },
+      { name: 'PostgreSQL 17', purpose: 'Base de datos diseñada: 26 tablas y 3 vistas.' },
+      {
+        name: 'Modelo de datos',
+        purpose: 'Relaciones, restricciones, índices y movimientos de inventario.',
+      },
+      {
+        name: 'Datos de prueba',
+        purpose: '350 clientes, 500 mascotas, 1.500 citas y 1.000 ventas ficticias.',
+      },
+      { name: 'Próxima etapa', purpose: 'Backend, autenticación y conexión con la base de datos.' },
     ],
   },
   {

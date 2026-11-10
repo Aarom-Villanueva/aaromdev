@@ -29,7 +29,12 @@ function parseCloudinaryVideoUrl(url: string): CloudinaryParts {
   return { cloud, asset };
 }
 
-export type CloudinaryVideo = { src: string; poster: string };
+export type CloudinaryVideo = {
+  src: string;
+  poster: string;
+  /** Small, low-quality copy for blurred backgrounds (it is never seen sharp). */
+  ambient: string;
+};
 
 type VideoOptions = {
   /** Max delivered width; never upscales. */
@@ -51,6 +56,7 @@ export function cloudinaryVideo(url: string, { width = 1280, posterAt = 0 }: Vid
   return {
     src: `${base}/q_auto,w_${width},c_limit/${asset}.mp4`,
     poster: `${base}/so_${posterAt},f_auto,q_auto,w_${Math.min(width, 960)},c_limit/${asset}.jpg`,
+    ambient: `${base}/q_auto:low,w_480,c_limit/${asset}.mp4`,
   };
 }
 

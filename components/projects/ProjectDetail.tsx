@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Reveal } from '@/components/motion/Reveal';
+import AmbientVideo from '@/components/projects/AmbientVideo';
 import { WhatsAppIcon } from '@/components/social/SocialLinks';
 import { BrowserFrame, KindTag, projectHref } from '@/components/projects/ProjectCard';
 import { buildWhatsAppUrl } from '@/data/contact';
@@ -15,14 +16,22 @@ function ambientImage(project: Project) {
 function Hero({ project, whatsappUrl }: { project: Project; whatsappUrl: string }) {
   return (
     <section className="relative overflow-hidden bg-[#030303] pt-28 pb-20 lg:pt-36 lg:pb-28">
-      {/* Ambient glow taken from the project's own visual, so every page gets its own colour. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+      {/* Ambient background from the project's own visual: the blurred poster everywhere,
+          and on large screens a low-res copy of the video playing behind it. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <img
           src={ambientImage(project)}
           alt=""
           className="absolute left-1/2 top-[38%] h-[70%] w-[90%] -translate-x-1/2 -translate-y-1/2 scale-125 object-cover opacity-30 blur-[110px]"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#030303]/40 via-[#030303]/70 to-[#030303]" />
+        {project.media.type === 'video' && project.media.ambient ? (
+          <AmbientVideo
+            src={project.media.ambient}
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-[0.22] blur-[36px] saturate-150"
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#030303]/30 via-[#030303]/65 to-[#030303]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(3,3,3,0.85),transparent_60%)]" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-10">
