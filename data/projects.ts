@@ -398,12 +398,13 @@ const allProjects: Project[] = [
     inDevelopment: true,
     media: {
       type: 'video',
-      ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1794326486/nexovet-corto.mp4', {
-        posterAt: 5,
+      ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1794328249/nexovet-corto-perro.mp4', {
+        posterAt: 2,
       }),
     },
+    url: 'https://aarom-villanueva.github.io/nexovet-demo/',
     statusNote:
-      'Demo interactiva en desarrollo: la interfaz se puede recorrer y la base de datos ya está diseñada con datos de prueba. Falta el backend, el inicio de sesión y la conexión con la base de datos.',
+      'Demo interactiva en desarrollo: puedes recorrerla con datos de ejemplo desde «Ver en vivo». La base de datos ya está diseñada; falta el backend, el inicio de sesión y la conexión con la base de datos.',
     features: [
       {
         title: 'Agenda de citas',
