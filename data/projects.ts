@@ -20,7 +20,12 @@ export type ProjectMedia =
   /** Long full-page capture that scrolls by itself inside the frame. */
   | { type: 'scroll-image'; src: string; width: number; height: number };
 
-export type ProjectFeature = { title: string; description: string };
+export type ProjectFeature = {
+  title: string;
+  description: string;
+  /** Not built yet: the detail page labels it "Previsto". */
+  planned?: boolean;
+};
 export type ProjectStackItem = { name: string; purpose: string };
 
 export type Project = {
@@ -40,6 +45,10 @@ export type Project = {
   features?: ProjectFeature[];
   /** Detail page, "Detalles técnicos": each technology and what it is used for. */
   stack?: ProjectStackItem[];
+  /** Still being built: cards and the detail page show an "En desarrollo" tag. */
+  inDevelopment?: boolean;
+  /** Honest note on what is (and isn't) live yet, shown on the detail page. */
+  statusNote?: string;
   /** Full-width card at the top of the home section. Only one project should set it. */
   highlight?: boolean;
   /** Candidate for the home section, which shows the first four in array order
@@ -164,6 +173,62 @@ const allProjects: Project[] = [
     showOnHome: true,
   },
   {
+    slug: 'torq',
+    name: 'TORQ',
+    tagline: 'E-commerce de equipamiento para moto',
+    summary:
+      'Experiencia de comercio electrónico para una marca conceptual de cultura motociclista: catálogo dinámico, variantes, carrito persistente y contenido multimedia, con una identidad en carbón y verde lima.',
+    category: 'tienda',
+    kind: 'demo',
+    media: {
+      type: 'video',
+      ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1794270668/torq-card-extendido.mp4'),
+    },
+    url: 'https://torq-rho.vercel.app',
+    statusNote:
+      'La versión publicada no tiene pagos reales ni checkout público. El simulador de pago funciona solo en local.',
+    features: [
+      {
+        title: 'Catálogo de equipamiento',
+        description: 'Cascos, guantes, chaquetas y repuestos, con fotos, precio en soles, variantes, SKU y stock de muestra.',
+      },
+      {
+        title: 'Búsqueda, filtros y orden',
+        description: 'Filtros por categoría y disponibilidad, y orden por precio o nombre.',
+      },
+      {
+        title: 'Carrito persistente',
+        description: 'Añadir productos, cambiar cantidades, eliminar y ver totales; el carrito se mantiene entre visitas.',
+      },
+      {
+        title: 'Precios verificados en el servidor',
+        description: 'El servidor recalcula precios y comprueba disponibilidad, en lugar de confiar en lo que envía el navegador.',
+      },
+      {
+        title: 'Fotos y videos de marca',
+        description: 'Multimedia servida desde Cloudinary, con reproducción manual y una alternativa estática.',
+      },
+      {
+        title: 'Marca, accesibilidad y responsive',
+        description:
+          'Páginas de Nosotros y Ayuda con misión, visión y valores; adaptada a celular y escritorio, navegable con teclado y con movimiento reducido.',
+      },
+    ],
+    stack: [
+      { name: 'Next.js 16 + React 19', purpose: 'Aplicación con App Router; la API vive dentro del mismo proyecto.' },
+      { name: 'TypeScript', purpose: 'Tipado de catálogo, carrito y respuestas de la API.' },
+      { name: 'Tailwind CSS 4', purpose: 'Estilos junto con CSS propio para la identidad de la marca.' },
+      { name: 'Motion for React', purpose: 'Animaciones de la interfaz.' },
+      { name: 'PostgreSQL (Neon)', purpose: 'Base de datos de productos, variantes y stock.' },
+      { name: 'Drizzle ORM + pg', purpose: 'Acceso a datos con consultas parametrizadas.' },
+      { name: 'Zod', purpose: 'Validación de solicitudes, con límites de tamaño.' },
+      { name: 'Cloudinary', purpose: 'Imágenes y videos de producto.' },
+      { name: 'Vercel', purpose: 'Hosting, con cabeceras de seguridad.' },
+      { name: 'ESLint + pruebas automatizadas', purpose: 'Verificación de calidad junto con el chequeo de TypeScript.' },
+    ],
+    showOnHome: true,
+  },
+  {
     slug: 'vanta-01',
     name: 'VANTA-01',
     tagline: 'Landing de producto',
@@ -260,6 +325,64 @@ const allProjects: Project[] = [
       { name: 'TypeScript (strict)', purpose: 'Contenido del menú, cafés y negocio en archivos de datos tipados.' },
       { name: 'Tailwind CSS 4', purpose: 'Diseño editorial con tokens definidos en CSS.' },
       { name: 'APIs nativas del navegador', purpose: 'Animaciones con un solo listener de scroll e IntersectionObserver, sin librerías extra.' },
+    ],
+  },
+  {
+    slug: 'leadflow-ai',
+    name: 'LeadFlow AI',
+    tagline: 'CRM de prospectos con IA',
+    summary:
+      'Centraliza prospectos, conversaciones y seguimientos para que cada oportunidad de venta tenga contexto, un responsable y un próximo paso claro.',
+    category: 'sistema',
+    kind: 'producto',
+    inDevelopment: true,
+    media: {
+      type: 'video',
+      ...cloudinaryVideo('https://res.cloudinary.com/epea8suu/video/upload/v1794270638/leadflow-ai-presentacion.mp4', {
+        posterAt: 3,
+      }),
+    },
+    statusNote:
+      'En desarrollo. Ya funcionan identidad y organizaciones; el listado, la ficha y el pipeline se pueden navegar con datos de ejemplo. El backend de prospectos y la IA están en camino.',
+    features: [
+      {
+        title: 'Listado y búsqueda de prospectos',
+        description: 'Búsqueda, filtros por etapa o responsable, orden y paginación. Hoy funciona sobre datos de ejemplo.',
+      },
+      {
+        title: 'Ficha del prospecto',
+        description: 'Quién es, de dónde llegó, quién lo atiende, su actividad y sus seguimientos, en una sola vista.',
+      },
+      {
+        title: 'Pipeline de ventas',
+        description: 'Oportunidades entre etapas como Nuevo, Calificación, Propuesta, Ganado y Perdido.',
+      },
+      {
+        title: 'Usuarios y organizaciones',
+        description: 'Identidad y organizaciones ya implementadas: cada prospecto pertenece a una organización.',
+      },
+      {
+        title: 'Historial y seguimientos',
+        description:
+          'Notas, llamadas y reuniones, más una próxima acción con responsable y vencimiento. Incluye archivar sin perder el historial.',
+        planned: true,
+      },
+      {
+        title: 'Asistencia de IA',
+        description: 'Resumir el contexto, recomendar el siguiente paso y redactar borradores que el usuario revisa.',
+        planned: true,
+      },
+    ],
+    stack: [
+      { name: 'Next.js + React', purpose: 'Interfaz de la aplicación.' },
+      { name: 'TypeScript', purpose: 'Tipado de punta a punta.' },
+      { name: 'Tailwind CSS', purpose: 'Sistema visual de la interfaz.' },
+      { name: 'PostgreSQL + Drizzle', purpose: 'Persistencia prevista; cada prospecto pertenecerá a una organización.' },
+      { name: 'Zod', purpose: 'Validación prevista en el servidor, además de la del formulario.' },
+      {
+        name: 'Control de versiones por registro',
+        purpose: 'Detectará ediciones simultáneas y devolverá un conflicto en vez de sobrescribir en silencio.',
+      },
     ],
   },
   {

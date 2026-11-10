@@ -52,7 +52,12 @@ export function BrowserFrame({
 
 export function KindTag({ project }: { project: Project }) {
   return (
-    <span className={`tag-tech ${project.kind === 'cliente' ? 'tag-tech-blue' : ''}`}>{kindLabels[project.kind]}</span>
+    <span className="inline-flex flex-wrap gap-2">
+      <span className={`tag-tech ${project.kind === 'cliente' ? 'tag-tech-blue' : ''}`}>{kindLabels[project.kind]}</span>
+      {project.inDevelopment ? (
+        <span className="tag-tech border-amber-300/25 text-amber-200/80">En desarrollo</span>
+      ) : null}
+    </span>
   );
 }
 

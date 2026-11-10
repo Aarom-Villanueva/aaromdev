@@ -58,6 +58,14 @@ function Hero({ project, whatsappUrl }: { project: Project; whatsappUrl: string 
             <Reveal delay={0.2}>
               <p className="mb-8 max-w-xl text-[15px] leading-relaxed text-white/55">{project.summary}</p>
             </Reveal>
+            {project.statusNote ? (
+              <Reveal delay={0.22}>
+                <p className="mb-8 max-w-xl rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[13px] leading-relaxed text-white/60">
+                  <span className="font-semibold text-white/80">Estado actual: </span>
+                  {project.statusNote}
+                </p>
+              </Reveal>
+            ) : null}
             <Reveal delay={0.25}>
               <div className="flex flex-wrap gap-3">
                 {project.url ? (
@@ -95,6 +103,7 @@ function Hero({ project, whatsappUrl }: { project: Project; whatsappUrl: string 
 
 function Features({ project }: { project: Project }) {
   if (!project.features?.length) return null;
+  const hasPlanned = project.features.some((feature) => feature.planned);
 
   return (
     <section className="relative bg-[#08090B] py-24 lg:py-32">
@@ -104,16 +113,26 @@ function Features({ project }: { project: Project }) {
         </Reveal>
         <Reveal delay={0.05}>
           <h2 className="text-headline mb-14 max-w-3xl text-white">
-            Funciones principales. <span className="text-white/50">Lo que ya está implementado.</span>
+            Funciones principales.{' '}
+            <span className="text-white/50">
+              {hasPlanned ? 'Lo que ya funciona y lo que viene.' : 'Lo que ya está implementado.'}
+            </span>
           </h2>
         </Reveal>
         <div className="grid gap-5 md:grid-cols-2">
           {project.features.map((feature, index) => (
             <Reveal key={feature.title} delay={0.05 * index}>
               <div className="h-full rounded-2xl border border-white/[0.07] bg-[#0A0C0F] p-7 transition-colors duration-300 hover:border-white/15 lg:p-8">
-                <span className="mb-5 block font-mono text-[11px] tracking-[0.16em] text-[#789DFF]">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
+                <div className="mb-5 flex items-center justify-between gap-3">
+                  <span className="font-mono text-[11px] tracking-[0.16em] text-[#789DFF]">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  {feature.planned ? (
+                    <span className="rounded-full border border-amber-300/25 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-amber-200/80">
+                      Previsto
+                    </span>
+                  ) : null}
+                </div>
                 <h3 className="mb-3 text-lg font-semibold text-white/90">{feature.title}</h3>
                 <p className="text-sm leading-relaxed text-white/50">{feature.description}</p>
               </div>
