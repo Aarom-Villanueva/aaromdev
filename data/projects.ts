@@ -41,8 +41,15 @@ export type Project = {
   media: ProjectMedia;
   /** Live site. The detail page shows a "Ver en vivo" button when present. */
   url?: string;
+  /** Text of the `url` button (default "Ver en vivo"). */
+  urlLabel?: string;
+  /** Public showcase page (e.g. a static site with videos) that is NOT the working system.
+   * The detail page shows its button first, with `note` beside it so nobody mistakes it for access. */
+  presentation?: { url: string; label: string; note: string };
   /** Short tags (highlight card and fallback for the detail page when `stack` is empty). */
   technologies?: string[];
+  /** Also show `technologies` as tags above the stack list on the detail page. */
+  tagsInDetail?: boolean;
   /** Detail page, "Qué hace". Only write what the project really does today. */
   features?: ProjectFeature[];
   /** Detail page, "Detalles técnicos": each technology and what it is used for. */
@@ -392,7 +399,7 @@ const allProjects: Project[] = [
     name: 'NexoVet',
     tagline: 'Gestión para veterinarias',
     summary:
-      'Plataforma para centralizar la gestión de una veterinaria con pet shop: clientes, mascotas, citas, seguimiento, inventario y ventas.',
+      'NexoVet reúne la atención veterinaria y la gestión del pet shop en una plataforma: agenda, clientes y mascotas, historias clínicas, seguimientos, inventario, compras, ventas y reportes.',
     category: 'sistema',
     kind: 'demo',
     inDevelopment: true,
@@ -402,52 +409,67 @@ const allProjects: Project[] = [
         posterAt: 2,
       }),
     },
+    presentation: {
+      url: 'https://nexovet.aarom-electodata.workers.dev/',
+      label: 'Ver presentación',
+      note: 'Página con videos del sistema. No es acceso público al sistema completo.',
+    },
     url: 'https://aarom-villanueva.github.io/nexovet-demo/',
+    urlLabel: 'Ver demo interactiva',
+    technologies: ['React', 'TypeScript', 'Vite', 'Node.js', 'Fastify', 'PostgreSQL', 'Docker Compose'],
+    tagsInDetail: true,
     statusNote:
-      'Demo interactiva en desarrollo: puedes recorrerla con datos de ejemplo desde «Ver en vivo». La base de datos ya está diseñada; falta el backend, el inicio de sesión y la conexión con la base de datos.',
+      'Plataforma para veterinarias con pet shop en Perú, en desarrollo y con datos ficticios. «Ver presentación» es una vitrina estática con videos del sistema; el sistema completo (API y base de datos) se ejecuta en entorno local.',
     features: [
       {
         title: 'Agenda de citas',
-        description: 'Citas organizadas por profesional, con el resumen del día de ventas, cobros y citas.',
+        description: 'Citas organizadas por profesional, con el resumen del día.',
       },
       {
-        title: 'Clientes y mascotas',
-        description: 'Registro de cada cliente y sus mascotas, con el historial de atención.',
+        title: 'Clientes, mascotas y atenciones',
+        description: 'Registro de cada cliente y sus mascotas, con el historial de atenciones.',
       },
       {
-        title: 'Controles y vacunas',
-        description: 'Seguimiento de controles y de las próximas vacunas de cada mascota.',
+        title: 'Seguimiento de pacientes',
+        description: 'Controles y próximas vacunas de cada mascota.',
       },
       {
-        title: 'Inventario del pet shop',
-        description: 'Movimientos, lotes y alertas cuando un producto se está acabando.',
+        title: 'Inventario, proveedores y compras',
+        description: 'Productos del pet shop, proveedores y compras en un mismo lugar.',
       },
       {
-        title: 'Ventas y pagos parciales',
-        description: 'Venta de productos y servicios, con pagos a cuenta.',
+        title: 'Ventas y cobros',
+        description: 'Venta de productos y servicios, con el registro de cada cobro.',
       },
       {
-        title: 'Panel con indicadores',
-        description: 'Indicadores del negocio para la administración.',
+        title: 'Reportes exportables',
+        description: 'Reportes que se pueden descargar en Excel y CSV.',
       },
       {
-        title: 'Acceso por rol',
-        description: 'Accesos separados para administración, recepción y veterinarios.',
-        planned: true,
+        title: 'Asistente de IA comercial',
+        description: 'Explica los indicadores del negocio. No realiza diagnósticos veterinarios.',
+      },
+      {
+        title: 'Acceso por roles',
+        description: 'Cuentas separadas para administrador, recepción y veterinario.',
+      },
+      {
+        title: 'Varias veterinarias, datos separados',
+        description: 'Arquitectura multi-veterinaria: los datos de cada una se mantienen separados, con una sede por veterinaria.',
       },
     ],
     stack: [
-      { name: 'HTML, CSS y JavaScript', purpose: 'Prototipo navegable de la interfaz.' },
-      { name: 'PostgreSQL 17', purpose: 'Base de datos diseñada: 26 tablas y 3 vistas.' },
+      { name: 'React, TypeScript y Vite', purpose: 'Interfaz del sistema (frontend).' },
+      { name: 'Node.js y Fastify', purpose: 'API del sistema (backend).' },
+      { name: 'PostgreSQL', purpose: 'Base de datos del sistema.' },
+      { name: 'Docker Compose', purpose: 'Entorno de desarrollo local.' },
+      { name: 'Asistente de IA', purpose: 'Análisis comercial: explica indicadores del negocio.' },
+      { name: 'Cloudinary', purpose: 'Alojamiento de los videos de demostración.' },
       {
-        name: 'Modelo de datos',
-        purpose: 'Relaciones, restricciones, índices y movimientos de inventario.',
+        name: 'Cloudflare Workers Static Assets',
+        purpose: 'Publica solo la presentación estática; la API y la base de datos no están alojadas ahí.',
       },
-      {
-        name: 'Datos de prueba',
-        purpose: '350 clientes, 500 mascotas, 1.500 citas y 1.000 ventas ficticias.',
-      },
-      { name: 'Próxima etapa', purpose: 'Backend, autenticación y conexión con la base de datos.' },
+      { name: 'Demo interactiva', purpose: 'Prototipo anterior en HTML, CSS y JavaScript, con datos de ejemplo.' },
     ],
   },
   {

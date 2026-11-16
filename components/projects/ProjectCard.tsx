@@ -9,7 +9,8 @@ const PRIMARY_TECHNOLOGIES = ['Java 21', 'Spring Boot', 'PostgreSQL', 'Next.js']
 
 /** Real domain when the project is live; otherwise just its name, never an invented URL. */
 function hostOf(project: Project) {
-  return project.url ? new URL(project.url).host : project.slug;
+  const shown = project.presentation?.url ?? project.url;
+  return shown ? new URL(shown).host : project.slug;
 }
 
 export function projectHref(project: Project) {

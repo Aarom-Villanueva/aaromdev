@@ -77,9 +77,25 @@ function Hero({ project, whatsappUrl }: { project: Project; whatsappUrl: string 
             ) : null}
             <Reveal delay={0.25}>
               <div className="flex flex-wrap gap-3">
+                {project.presentation ? (
+                  <a
+                    href={project.presentation.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary group"
+                  >
+                    {project.presentation.label}
+                    <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </a>
+                ) : null}
                 {project.url ? (
-                  <a href={project.url} target="_blank" rel="noopener noreferrer" className="btn-primary group">
-                    Ver en vivo
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`group ${project.presentation ? 'btn-secondary' : 'btn-primary'}`}
+                  >
+                    {project.urlLabel ?? 'Ver en vivo'}
                     <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </a>
                 ) : null}
@@ -87,12 +103,15 @@ function Hero({ project, whatsappUrl }: { project: Project; whatsappUrl: string 
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={project.url ? 'btn-secondary' : 'btn-primary'}
+                  className={project.url || project.presentation ? 'btn-secondary' : 'btn-primary'}
                 >
                   <WhatsAppIcon />
                   Quiero algo así
                 </a>
               </div>
+              {project.presentation ? (
+                <p className="mt-4 max-w-xl text-[12px] leading-relaxed text-white/50">{project.presentation.note}</p>
+              ) : null}
             </Reveal>
           </div>
         </div>
@@ -175,6 +194,15 @@ function TechnicalDetails({ project }: { project: Project }) {
         </div>
 
         <div className="lg:col-span-8">
+          {hasStack && project.tagsInDetail && project.technologies?.length ? (
+            <div className="mb-8 flex flex-wrap gap-2">
+              {project.technologies.map((technology) => (
+                <span key={technology} className="tag-tech tag-tech-blue">
+                  {technology}
+                </span>
+              ))}
+            </div>
+          ) : null}
           {hasStack ? (
             <dl className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
               {project.stack!.map((item, index) => (
