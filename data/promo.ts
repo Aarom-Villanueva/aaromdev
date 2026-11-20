@@ -18,8 +18,8 @@ export type Promo = {
  * --------------------------------------------------------------------------------- */
 export const promo: Promo | null = {
   message: 'Precios especiales en páginas web, tiendas y sistemas',
-  endsAt: '2026-11-20T23:59:59-05:00',
-  endsLabel: '20 de noviembre',
+  endsAt: '2026-11-30T23:59:59-05:00',
+  endsLabel: '30 de noviembre',
   prices: {
     landing: 449,
     ecommerce: 1499,
